@@ -15,14 +15,14 @@ module.exports = class User {
         this.isCR = user.IsCR;
     }
 
-    save() {
-        return db.execute(
-            'INSERT INTO products (title, price, imageUrl, description) VALUES (?, ?, ?, ?)',
-            [this.title, this.price, this.imageUrl, this.description]
-        );
-    }
+    // save() {
+    //     return db.execute(
+    //         'INSERT INTO products (title, price, imageUrl, description) VALUES (?, ?, ?, ?)',
+    //         [this.title, this.price, this.imageUrl, this.description]
+    //     );
+    // }
 
-    static deleteById(id) {}
+    // static deleteById(id) {}
 
     static fetchAll() {
         return db.execute('SELECT * FROM user;');
@@ -30,7 +30,17 @@ module.exports = class User {
 
     static async findById(id) {
         let resultRaw = await db.execute(`SELECT * FROM user WHERE id = ${id}`)
-        let user = resultRaw[0];
+
+        if(resultRaw[0].length===0){
+            return null;
+        }
+
+        let user = new User(resultRaw[0][0]);
+
         return user;
+    }
+
+    saveToken(token){
+        return db.execute(`INSERT INTO token(studentID,token) VALUES(${this.id},'${token}');`);
     }
 };

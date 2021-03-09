@@ -1,9 +1,16 @@
 const express = require('express');
 
 const userController = require('../controllers/user');
+const userValidators = require('../validations/user')
 
 const router = express.Router();
 
-router.post('/signIn', userController.signIn);
+const authenticate = require('../middlewares/authenticate')
+const {body} = require('express-validator/check')
+
+router.post('/signIn',
+    userValidators.validateSignIn(),
+    authenticate.handlePOSTLogIn
+);
 
 module.exports = router;
