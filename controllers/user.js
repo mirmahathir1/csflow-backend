@@ -1,7 +1,23 @@
 const User = require('../models/user');
 
+const {validationResult} = require('express-validator');
+const {ErrorHandler} = require('../error');
 
 exports.viewProfile = async (req, res, next) => {
-    let user = await User.findById(req.body.id);
-    res.send(user);
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400,errors);
+        }
+
+        let user = await User.findById(req.params.userId);
+
+        if(!user){
+            throw new ErrorHandler(404,"User not found");
+        }
+
+        return res.status(200).send(user);
+    }catch (e){
+        next(e);
+    }
 };

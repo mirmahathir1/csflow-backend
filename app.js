@@ -2,7 +2,6 @@ const express = require('express')
 var cors = require('cors')
 const dotenv = require('dotenv')
 const bodyParser = require('body-parser');
-const { handleError } = require('./error');
 
 const app = express();
 
@@ -15,15 +14,17 @@ app.use(bodyParser.json());
 app.use(cors())
 
 const userRoutes = require('./routes/user');
+const {handleError} = require("./error");
 app.use('/user', userRoutes);
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
 
 app.use((err, req, res, next) => {
     handleError(err, res);
 });
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
 
 app.listen(port, () => {
     console.log(`App listening at http://localhost:${port}`)

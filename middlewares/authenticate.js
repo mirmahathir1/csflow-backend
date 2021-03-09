@@ -3,81 +3,74 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
-const {  validationResult } = require('express-validator');
+const {validationResult} = require('express-validator');
 
-const {ErrorHandler} = require('../error');
 
-let handlePOSTLogIn = async (req, res,next) => {
+let handlePOSTLogIn = async (req, res, next) => {
 
     try {
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            // return res.status(400).json({ message: errors });
-            throw new ErrorHandler(400, errors)
-
+            return res.status(400).send({status:'ERROR',statusCode:400,message: "Missing fields in request body"});
         }
 
         let id = req.body.id;
         let password = req.body.password;
         let user = await User.findById(req.body.id);
 
-        if(!user){
-            // return res.status(401).send({
-            //     status: 'ERROR',
-            //     message: 'Incorrect id / password'
-            // });
-
-            throw new ErrorHandler(401, 'Incorrect id / password')
-
+        if (!user) {
+            return res.status(401).send({status:'ERROR',statusCode:401,message: 'Incorrect id / password'});
         }
 
         let matched = await bcrypt.compare(password, user.password);
 
         if (matched) {
-            let token = await jwt.sign({
-                _id: id.toString(),
-                auth:'auth'
-            }, process.env.BCRYPT_SALT).toString();
+
+            let token = jwt.sign({id:user.id}, process.env.BCRYPT_SALT);
 
             await user.saveToken(token);
 
             return res.status(201).send({token});
         } else {
-            throw new ErrorHandler(401, 'Incorrect id / password')
+            return res.status(401).send({status:'ERROR',statusCode:401,message:'Incorrect id / password'});
+
+
         }
     } catch (e) {
-        next(e);
+        return res.status(500).send({message: e.message});
     }
 };
 
-// let handleAuthentication = async (req, res, next) => {
-//     try {
-//         let token = req.header('x-auth');
-//         let decodedDonor = await jwt.verify(token, process.env.BCRYPT_SALT);
-//         let donorQueryResult = await donorInterface.findDonorByQuery({_id: decodedDonor._id}, {});
-//
-//         if (donorQueryResult.status === 'OK') {
-//             let donor = donorQueryResult.data;
-//             res.locals.middlewareResponse = {
-//                 donor,
-//                 token
-//             };
-//             return next();
-//         } else {
-//             return res.status(401).send({
-//                 status: 'ERROR',
-//                 message: 'Authentication failed. Invalid authentication token.'
-//             });
-//         }
-//
-//     } catch (e) {
-//         return res.status(500).send({
-//             status: 'EXCEPTION',
-//             message: e.message
-//         })
-//     }
-// };
+let handleAuthentication = async (req, res, next) => {
+    let decodedUser;
+    let token
+    try {
+        token = req.header('x-auth');
+        decodedUser = await jwt.verify(token, process.env.BCRYPT_SALT);
+    }catch (e){
+        return res.status(401).send({message: "Malformed JWT token"});
+    }
+
+    try {
+        let user = await User.findByToken(token);
+
+        if (!user) {
+            return res.status(401).send({message: 'Invalid User'})
+        }
+
+        res.locals.middlewareResponse = {
+            user,
+            token
+        };
+        return next();
+
+
+    } catch (e) {
+        return res.status(500).send({message: e.message});
+
+    }
+};
 //
 // let handlePOSTLogOut = async (req, res) => {
 //     try {
@@ -104,6 +97,6 @@ let handlePOSTLogIn = async (req, res,next) => {
 
 module.exports = {
     handlePOSTLogIn,
-    // handleAuthentication,
+    handleAuthentication,
     // handlePOSTLogOut
 }

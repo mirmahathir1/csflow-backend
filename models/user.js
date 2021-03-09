@@ -40,6 +40,19 @@ module.exports = class User {
         return user;
     }
 
+    static async findByToken(token){
+        let resultRaw = await db.execute(`SELECT * from user where ID=(SELECT studentID FROM token WHERE token = '${token}')`);
+
+        // console.log(`SELECT * from user where ID=(SELECT studentID FROM token WHERE token = '${token}')`);
+        if(resultRaw[0].length===0){
+            return null;
+        }
+
+        let user = new User(resultRaw[0][0]);
+
+        return user;
+    }
+
     saveToken(token){
         return db.execute(`INSERT INTO token(studentID,token) VALUES(${this.id},'${token}');`);
     }
