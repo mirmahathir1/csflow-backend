@@ -1,7 +1,8 @@
 const User = require('../models/user');
 
 const {validationResult} = require('express-validator');
-const {ErrorHandler} = require('../error');
+const {ErrorHandler} = require('../response/error');
+const {SuccessResponse} = require('../response/success');
 
 exports.viewProfile = async (req, res, next) => {
     try {
@@ -16,8 +17,34 @@ exports.viewProfile = async (req, res, next) => {
             throw new ErrorHandler(404,"User not found");
         }
 
-        return res.status(200).send(user);
+        return res.status(200).send(new SuccessResponse("OK",200,"Fetched user successfully",user));
     }catch (e){
         next(e);
     }
 };
+
+exports.logOut = async (req, res, next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        let token = res.locals.middlewareResponse.token;
+
+        await user.deleteToken(token);
+
+        return res.status(200).send(new SuccessResponse("OK",200,"Logged out successfully",null));
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.logOutAllDevices = async (req, res, next) =>{
+    try{
+        let user = res.locals.middlewareResponse.user;
+
+        await user.deleteAllTokens();
+
+        return res.status(200).send(new SuccessResponse("OK",200,"Logged out of all devices successfully",null));
+
+    }catch (e) {
+        next(e);
+    }
+}

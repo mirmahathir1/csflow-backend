@@ -1,6 +1,7 @@
 const db = require('../db');
 
 module.exports = class User {
+
     constructor(user) {
         this.id = user.ID;
         this.batchID = user.BatchID;
@@ -14,15 +15,6 @@ module.exports = class User {
         this.session = user.Session;
         this.isCR = user.IsCR;
     }
-
-    // save() {
-    //     return db.execute(
-    //         'INSERT INTO products (title, price, imageUrl, description) VALUES (?, ?, ?, ?)',
-    //         [this.title, this.price, this.imageUrl, this.description]
-    //     );
-    // }
-
-    // static deleteById(id) {}
 
     static fetchAll() {
         return db.execute('SELECT * FROM user;');
@@ -40,6 +32,17 @@ module.exports = class User {
         return user;
     }
 
+    static async findByEmail(email){
+        let resultRaw = await db.execute(`SELECT * FROM user WHERE email = '${email}'`);
+
+        if(resultRaw[0].length===0){
+            return null;
+        }
+
+        let user = new User(resultRaw[0][0]);
+        return user;
+    }
+
     static async findByToken(token){
         let resultRaw = await db.execute(`SELECT * from user where ID=(SELECT studentID FROM token WHERE token = '${token}')`);
 
@@ -51,6 +54,14 @@ module.exports = class User {
         let user = new User(resultRaw[0][0]);
 
         return user;
+    }
+
+    deleteToken(token){
+        return db.execute(`DELETE FROM token where token = '${token}'`);
+    }
+
+    deleteAllTokens(){
+        return db.execute(`DELETE FROM token WHERE studentID = ${this.id}`);
     }
 
     saveToken(token){

@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(cors())
 
 const userRoutes = require('./routes/user');
-const {handleError} = require("./error");
+const {handleError} = require("./response/error");
 app.use('/user', userRoutes);
 
 app.get('/', (req, res) => {

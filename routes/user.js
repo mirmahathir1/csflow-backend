@@ -18,4 +18,16 @@ router.get('/:userId',
     userController.viewProfile
 );
 
+router.post('/signOutAllDevice',
+    authenticate.handleAuthentication,
+    userController.logOutAllDevices,
+);
+
+router.post('/signOut',
+    authenticate.handleAuthentication,
+    userController.logOut
+);
+
+
+
 module.exports = router;
