@@ -34,7 +34,7 @@ let handlePOSTLogIn = async (req, res, next) => {
 
             return res.status(201).send(new SuccessResponse("OK",201,"Successfully signed in",token));
         } else {
-            return res.status(401).send(new ErrorHandler(401,'Incorrect id / password'));
+            return res.status(401).send(new ErrorHandler(401,'Incorrect email / password'));
         }
     } catch (e) {
         return res.status(500).send(new ErrorHandler(500,e.message));
