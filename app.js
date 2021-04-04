@@ -14,8 +14,10 @@ app.use(bodyParser.json());
 app.use(cors())
 
 const userRoutes = require('./routes/user');
+const authRoutes = require('./routes/auth');
 const {handleError} = require("./response/error");
 app.use('/user', userRoutes);
+app.use('/auth',authRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
