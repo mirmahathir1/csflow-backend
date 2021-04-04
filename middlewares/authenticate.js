@@ -43,14 +43,16 @@ let handlePOSTLogIn = async (req, res, next) => {
 
 let handleAuthentication = async (req, res, next) => {
     let decodedUser;
-    let token = req.header('x-auth');
 
-    if(!token){
+
+    if(!req.header('Authorization')){
         return res.status(401).send(new ErrorHandler(401,'Authentication header not found'))
     }
 
-    try {
+    let token;
 
+    try {
+        token = req.header('Authorization').replace('Bearer ','');
         decodedUser = await jwt.verify(token, process.env.BCRYPT_SALT);
     }catch (e){
         return res.status(401).send(new ErrorHandler(401,"Malformed JWT token"));
