@@ -22,3 +22,12 @@ exports.viewProfile = async (req, res, next) => {
         next(e);
     }
 };
+
+exports.viewMyProfile = async(req, res,next)=>{
+    try{
+        let user = res.locals.middlewareResponse.user;
+        return res.status(200).send(new SuccessResponse("OK",200,"Fetched user successfully",user));
+    }catch (e){
+        next(e);
+    }
+};

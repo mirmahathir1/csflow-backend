@@ -7,10 +7,17 @@ const router = express.Router();
 
 const authenticate = require('../middlewares/authenticate')
 
+router.get('/me',
+    authenticate.handleAuthentication,
+    userController.viewMyProfile
+)
+
 router.get('/:userId',
     authenticate.handleAuthentication,
     userValidators.validateDetails(),
     userController.viewProfile
 );
+
+
 
 module.exports = router;
