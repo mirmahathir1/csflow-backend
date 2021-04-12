@@ -8,7 +8,6 @@ const {ErrorHandler}= require('../response/error')
 const {SuccessResponse} = require('../response/success')
 
 let handlePOSTLogIn = async (req, res, next) => {
-    console.log("login request received");
     try {
 
         const errors = validationResult(req);
@@ -32,7 +31,7 @@ let handlePOSTLogIn = async (req, res, next) => {
 
             await user.saveToken(token);
 
-            return res.status(201).send(new SuccessResponse("OK",201,"Successfully signednp in",token));
+            return res.status(201).send(new SuccessResponse("OK",201,"Successfully logged in",token));
         } else {
             return res.status(401).send(new ErrorHandler(401,'Incorrect email / password'));
         }
