@@ -8,7 +8,6 @@ const {ErrorHandler}= require('../response/error')
 const {SuccessResponse} = require('../response/success')
 
 let handlePOSTLogIn = async (req, res, next) => {
-
     try {
 
         const errors = validationResult(req);
