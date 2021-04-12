@@ -16,7 +16,7 @@ exports.viewProfile = async (req, res, next) => {
         if(!user){
             throw new ErrorHandler(404,"User not found");
         }
-
+        //console.log(user);
         return res.status(200).send(new SuccessResponse("OK",200,"Fetched user successfully",user));
     }catch (e){
         next(e);
