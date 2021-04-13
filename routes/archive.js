@@ -7,6 +7,9 @@ router.get('/thesis/batch/:batchNumber',
     batchValidator.validateDetails(),
     archiveController.getThesisByBatchID
 )
+router.get('/thesis/:id',
+    archiveController.getThesisDetailsByThesisID
+)
 router.get('/resource',
     archiveController.getAllDriveLinks
 );

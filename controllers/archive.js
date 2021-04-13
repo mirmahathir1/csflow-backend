@@ -36,3 +36,19 @@ exports.getThesisByBatchID = async(req, res,next)=>{
         next(e);
     }
 };
+
+exports.getThesisDetailsByThesisID = async(req, res,next)=>{
+    try{
+        /*const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400,errors.errors[0].msg,errors);
+        }*/
+        let thesisarchive = await Thesisarchive.getThesisDetailsById(req.params.id);
+        if(!thesisarchive){
+            throw new ErrorHandler(404,"Thesis not found",null);
+        }
+        return res.status(200).send(new SuccessResponse("OK",200,"Details of thesis fetched successfully",thesisarchive));
+    }catch (e){
+        next(e);
+    }
+};

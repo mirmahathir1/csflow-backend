@@ -26,7 +26,7 @@ module.exports = class User {
         if(resultRaw[0].length===0){
             return null;
         }
-        console.log(resultRaw[0][0]);
+        //console.log(resultRaw[0][0]);
         let user = new User(resultRaw[0][0]);
 
         return user;
