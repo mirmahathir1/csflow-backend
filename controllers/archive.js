@@ -25,11 +25,11 @@ exports.getThesisByBatchID = async(req, res,next)=>{
     try{
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            throw new ErrorHandler(400,errors);
+            throw new ErrorHandler(400,errors[0].msg,errors);
         }
         let thesisarchive = await Thesisarchive.findByBatchID(req.params.batchNumber);
         if(!thesisarchive){
-            throw new ErrorHandler(404,"Batch not found");
+            throw new ErrorHandler(404,"Batch not found",null);
         }
         return res.status(200).send(new SuccessResponse("OK",200,"List of theses fetched successfully",thesisarchive));
     }catch (e){
