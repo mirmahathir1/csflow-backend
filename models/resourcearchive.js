@@ -12,7 +12,7 @@ module.exports = class Resourcearchive {
 
 static async fetchAll() {
     let Array=[];
-    let row2 = await db.execute('SELECT ID FROM batch;');
+    let row2 = await db.execute(`SELECT ID FROM batch;`);
     let batches=[];
     let j;
     for(j=0;j<row2[0].length;j++){
@@ -42,6 +42,7 @@ static async fetchAll() {
             resources:resources
         };
         Array.push(objects);
+
     }
     return Array;
 }
