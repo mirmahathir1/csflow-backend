@@ -1,5 +1,5 @@
 const db = require("../db");
-//const sql = require('mysql2');
+
 
 module.exports = class Resourcearchive {
     constructor(resourcearchive) {
@@ -19,17 +19,13 @@ static async fetchAll() {
         batches.push(Object.values(row2[0][j]));
     }
 
-
     let k;
     for(k=0;k<batches.length;k++){
         let batch_no = batches[k][0]
-        console.log(batch_no);
-        let row = await db.execute('SELECT Level,Term,Link FROM resourcearchive WHERE BatchID = ${batch_no}');
 
-        let count = await db.execute('SELECT COUNT(ID) FROM resourcearchive WHERE BatchID = ${batch_no}');
+        let row = await db.execute(`SELECT Level,Term,Link FROM resourcearchive WHERE BatchID = ${batch_no};`);
 
-        let obj = count[0][0];
-        let c = Object.values(obj);
+        let c = row[0].length;
         if(row[0].length===0){
             return null;
         }
