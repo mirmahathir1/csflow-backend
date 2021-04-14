@@ -80,7 +80,7 @@ where c.ThesisID=${id}`);
             }
         }
 
-        let row = await db.execute(`SELECT COUNT(ID) FROM thesisarchive;`);
+        let row = await db.execute(`SELECT MAX(ID) FROM thesisarchive;`);
         let count = Object.values(row[0][0]);
         let id = count[0]+1;
         await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
