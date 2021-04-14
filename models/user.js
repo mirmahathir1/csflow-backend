@@ -22,7 +22,7 @@ module.exports = class User {
 
     static async findById(id) {
         let resultRaw = await db.execute(`SELECT * FROM user WHERE id = ${id}`)
-        console.log(id);
+        //console.log(id);
         if(resultRaw[0].length===0){
             return null;
         }

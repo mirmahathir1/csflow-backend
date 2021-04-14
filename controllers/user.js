@@ -26,6 +26,7 @@ exports.viewProfile = async (req, res, next) => {
 exports.viewMyProfile = async(req, res,next)=>{
     try{
         let user = res.locals.middlewareResponse.user;
+        //console.log(user.batchID);
         return res.status(200).send(new SuccessResponse("OK",200,"Fetched user successfully",user));
     }catch (e){
         next(e);

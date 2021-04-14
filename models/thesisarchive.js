@@ -70,4 +70,25 @@ where c.ThesisID=${id}`);
 
         return Details;
     }
+    static async saveThesis(batchID,title,authors,abstract,link,owners){
+        let i;
+        for(i=0;i<owners.length;i++){
+            let row2 = await db.execute(`SELECT ID FROM user where ID=${owners[i]}`);
+            if(row2[0].length===0){
+                return null;
+            }
+        }
+
+        let row = await db.execute(`SELECT COUNT(ID) FROM thesisarchive;`);
+        let count = Object.values(row[0][0]);
+        let id = count[0]+1;
+        await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
+            VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
+        let k;
+        for (k=0;k<owners.length;k++){
+            await db.execute(`INSERT INTO thesisowner(ThesisID,UserID)
+            VALUES(${id},${owners[k]})`);
+        }
+        return 1;
+    }
 };
