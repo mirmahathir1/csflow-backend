@@ -15,18 +15,15 @@ module.exports = class User {
         this.session = user.Session;
         this.isCR = user.IsCR;
     }
-
     static fetchAll() {
         return db.execute('SELECT * FROM user;');
     }
 
     static async findById(id) {
         let resultRaw = await db.execute(`SELECT * FROM user WHERE id = ${id}`)
-        //console.log(id);
         if(resultRaw[0].length===0){
             return null;
         }
-        //console.log(resultRaw[0][0]);
         let user = new User(resultRaw[0][0]);
 
         return user;
@@ -38,40 +35,33 @@ module.exports = class User {
         if(resultRaw[0].length===0){
             return null;
         }
-        //console.log(resultRaw);
         let user = new User(resultRaw[0][0]);
         return user;
     }
-
     static async findByToken(token){
         let resultRaw = await db.execute(`SELECT * from user where ID=(SELECT studentID FROM token WHERE token = '${token}')`);
-
-        // console.log(`SELECT * from user where ID=(SELECT studentID FROM token WHERE token = '${token}')`);
         if(resultRaw[0].length===0){
             return null;
         }
-
         let user = new User(resultRaw[0][0]);
-
         return user;
     }
 
     deleteToken(token){
         return db.execute(`DELETE FROM token where token = '${token}'`);
     }
-
     deleteAllTokens(){
         return db.execute(`DELETE FROM token WHERE studentID = ${this.id}`);
     }
-
     saveToken(token){
         return db.execute(`INSERT INTO token(studentID,token) VALUES(${this.id},'${token}');`);
     }
     static async isUser(id){
         let row = await db.execute(`SELECT ID FROM user where ID=${id}`);
-        return row;
+        return row[0].length!==0;
     }
-    static async getUserDetails(userid){
-        return  db.execute(`SELECT Name,ProfilePic,ID,Karma FROM user where ID=${userid}`);
+    static async getUserDetailsByUserID(userid){
+        let result = await db.execute(`SELECT Name,ProfilePic,ID,Karma FROM user where ID=${userid}`)
+        return result[0][0];
     }
 };
