@@ -80,16 +80,29 @@ where c.ThesisID=${id}`);
             }
         }
 
+
         let row = await db.execute(`SELECT MAX(ID) FROM thesisarchive;`);
+
+        //console.log("reached6");
+
         let count = Object.values(row[0][0]);
         let id = count[0]+1;
+        //console.log("reached6.2");
+        console.log(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
+            VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
+
         await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
             VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
         let k;
+        //console.log("reached6.3");
+
+        //console.log("reached7");
         for (k=0;k<owners.length;k++){
             await db.execute(`INSERT INTO thesisowner(ThesisID,UserID)
             VALUES(${id},${owners[k]})`);
         }
+
+        //console.log("reached8");
         return 1;
     }
     static async userAuthorization(thesisID,userID){
