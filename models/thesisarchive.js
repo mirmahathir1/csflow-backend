@@ -26,16 +26,17 @@ module.exports = class Thesisarchive {
         return Array;
     }
     static async getThesisDetailsById(id){
-        let row = await db.execute(`SELECT Title,Authors,Abstract,Link FROM thesisarchive WHERE id = ${id}`);
+        let row = await db.execute(`SELECT o.UserID,t.Title,t.Authors,t.Abstract,t.Link FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.id = ${id}`);
         if(row[0].length===0){
             return null;
         }
-        let row2 = await db.execute(`SELECT UserID FROM thesisowner where ThesisID = ${id}`);
-        let count = row2[0].length;
+
+        let count = row[0].length;
         let i;
         let owners=[];
         for(i=0;i<count;i++){
-            let userid = Object.values(row2[0][i]);
+
+            let userid = row[0][i].UserID;
             let row3 = await db.execute(`SELECT Name,ProfilePic,ID,Karma FROM user where ID=${userid}`);
             owners.push(row3[0][0]);
 
