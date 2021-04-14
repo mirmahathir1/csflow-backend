@@ -41,7 +41,7 @@ module.exports = class Thesisarchive {
             owners.push(row3[0][0]);
 
         }
-        let row4 = await db.execute(`SELECT u.ID,u.Name,c.ThesisID,c.Description,c.Date from (thesisarchive t join comment c on t.ID = c.ThesisID) JOIN user u on u.ID = c.UserID
+        let row4 = await db.execute(`SELECT u.ID AS UID,u.Name,c.ID AS CID,c.Description,c.Date from (thesisarchive t join comment c on t.ID = c.ThesisID) JOIN user u on u.ID = c.UserID
 where c.ThesisID=${id}`);
         let B=row[0][0];
         let array=B.Authors.split(",");
@@ -51,11 +51,12 @@ where c.ThesisID=${id}`);
 
         for(k=0;k<count2;k++){
             let B2=row4[0][k];
+            console.log(B2);
             let obj={
-                id:B2.ThesisID,
+                id:B2.CID,
                 comment:B2.Description,
                 name:B2.Name,
-                studentID:B2.ID,
+                studentID:B2.UID,
                 timestamp:B2.Date
             }
             Comments.push(obj);

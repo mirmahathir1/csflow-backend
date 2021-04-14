@@ -16,6 +16,9 @@ router.post('/thesis',
     thesisValidator.validateDetails(),
     archiveController.postThesis
 )
+router.get('/batch',
+    archiveController.getBatchList
+);
 router.get('/resource',
     archiveController.getAllDriveLinks
 );

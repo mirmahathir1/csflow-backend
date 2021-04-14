@@ -1,10 +1,19 @@
 const Resourcearchive = require('../models/resourcearchive');
 const Thesisarchive = require('../models/thesisarchive');
+const Batch = require('../models/batch');
 const User = require('../models/user');
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
 
+exports.getBatchList = async(req,res,next)=>{
+    try {
+        let batchlist = await Batch.findBatchList();
+        return res.status(200).send(new SuccessResponse("OK",200,"List of batches fetched successfully",batchlist));
+    }catch (e) {
+        next(e);
+    }
+};
 exports.getAllDriveLinks = async(req, res,next)=>{
     try{
         let resourcearchive = await Resourcearchive.fetchAll();
