@@ -92,4 +92,31 @@ where c.ThesisID=${id}`);
         }
         return 1;
     }
+    static async userAuthorization(thesisID,userID){
+        let row = await db.execute(`SELECT o.UserID FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.ID=${thesisID}`);
+        let c = row[0].length;
+        let i;
+        for(i=0;i<c;i++){
+            if(row[0][i].UserID===userID){
+                return 1;
+            }
+        }
+
+        return null;
+
+    }
+    static async findThesis(id){
+        let row = await db.execute(`SELECT ID FROM thesisarchive WHERE ID=${id}`);
+
+        if(row[0].length===0){
+            return null;
+        }
+        return 1;
+    }
+    static async DeleteThesis(id){
+
+        await db.execute(`DELETE FROM thesisarchive WHERE ID=${id}`);
+
+
+    }
 };

@@ -6,9 +6,13 @@ module.exports = class Batch{
     }
     static async findBatchList(){
         let row = await db.execute(`SELECT ID FROM batch;`);
+
         let array=[];
         let c = row[0].length;
         let i;
+        if(c===0){
+            return null;
+        }
         for(i=0;i<c;i++){
             array.push(row[0][i].ID);
         }

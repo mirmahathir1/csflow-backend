@@ -9,6 +9,9 @@ const {SuccessResponse} = require('../response/success');
 exports.getBatchList = async(req,res,next)=>{
     try {
         let batchlist = await Batch.findBatchList();
+        if(!batchlist){
+            throw new ErrorHandler(404,"There is no batch currently",null);
+        }
         return res.status(200).send(new SuccessResponse("OK",200,"List of batches fetched successfully",batchlist));
     }catch (e) {
         next(e);
@@ -66,6 +69,7 @@ exports.postThesis = async(req,res,next)=>{
     try{
 
         let user = res.locals.middlewareResponse.user;
+        //console.log(user.id);
         let batchid = user.batchID;
 
         let title = req.body.title;
@@ -97,6 +101,26 @@ exports.postThesis = async(req,res,next)=>{
             throw new ErrorHandler(400,"Student ID not found",null);
         }
         return res.status(201).send(new SuccessResponse("OK",201,"Thesis created Successfully",null));
+    }catch (e) {
+        next(e);
+    }
+};
+exports.deleteThesis = async(req,res,next)=>{
+    try {
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let thesis = await Thesisarchive.findThesis(req.params.id);
+        if(!thesis){
+            throw new ErrorHandler(404,"Thesis not found",null);
+        }
+        let auth = await Thesisarchive.userAuthorization(req.params.id,userid);
+        if(!auth){
+            throw new ErrorHandler(401,"User is unauthorized to delete this thesis",null);
+        }
+
+        await Thesisarchive.DeleteThesis(req.params.id);
+        return res.status(200).send(new SuccessResponse("OK",200,"Successfully deleted thesis",null));
     }catch (e) {
         next(e);
     }

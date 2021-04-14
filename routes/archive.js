@@ -16,9 +16,13 @@ router.post('/thesis',
     thesisValidator.validateDetails(),
     archiveController.postThesis
 )
+router.delete('/thesis/:id',
+    authenticate.handleAuthentication,
+    archiveController.deleteThesis
+)
 router.get('/batch',
     archiveController.getBatchList
-);
+)
 router.get('/resource',
     archiveController.getAllDriveLinks
 );
