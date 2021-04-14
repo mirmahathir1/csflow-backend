@@ -1,5 +1,6 @@
 const db = require('../db');
 const User = require('../models/user');
+const Thesisowner = require('../models/thesisowner');
 module.exports = class Thesisarchive {
     constructor(thesisarchive) {
         this.id = thesisarchive.ID;
@@ -10,7 +11,7 @@ module.exports = class Thesisarchive {
         this.link = thesisarchive.Link;
     }
     static async findByBatchID(batchID){
-        let row = await db.execute(`SELECT ID,Title FROM thesisarchive WHERE batchID = ${batchID}`);
+        let row = await this.getThesisTitle(batchID);
         let Array = [];
 
         let count;
@@ -26,7 +27,7 @@ module.exports = class Thesisarchive {
         return Array;
     }
     static async getThesisDetailsById(id){
-        let row = await db.execute(`SELECT o.UserID,t.Title,t.Authors,t.Abstract,t.Link FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.id = ${id}`);
+        let row = await this.findDetails(id);
         if(row[0].length===0){
             return null;
         }
@@ -37,12 +38,11 @@ module.exports = class Thesisarchive {
         for(i=0;i<count;i++){
 
             let userid = row[0][i].UserID;
-            let row3 = await db.execute(`SELECT Name,ProfilePic,ID,Karma FROM user where ID=${userid}`);
+            let row3 = await User.getUserDetails(userid);
             owners.push(row3[0][0]);
 
         }
-        let row4 = await db.execute(`SELECT u.ID AS UID,u.Name,c.ID AS CID,c.Description,c.Date from (thesisarchive t join comment c on t.ID = c.ThesisID) JOIN user u on u.ID = c.UserID
-where c.ThesisID=${id}`);
+        let row4 = await this.findComments(id);
         let B=row[0][0];
         let array=B.Authors.split(",");
         let Comments=[];
@@ -51,7 +51,7 @@ where c.ThesisID=${id}`);
 
         for(k=0;k<count2;k++){
             let B2=row4[0][k];
-            console.log(B2);
+
             let obj={
                 id:B2.CID,
                 comment:B2.Description,
@@ -74,30 +74,23 @@ where c.ThesisID=${id}`);
     static async saveThesis(batchID,title,authors,abstract,link,owners){
         let i;
         for(i=0;i<owners.length;i++){
-            let row2 = await db.execute(`SELECT ID FROM user where ID=${owners[i]}`);
+            let row2 = await User.isUser(owners[i]);
             if(row2[0].length===0){
                 return null;
             }
         }
-        let row = await db.execute(`SELECT MAX(ID) FROM thesisarchive;`);
-
-        //console.log("reached6");
+        let row = await this.getMaxID();
 
         let count = Object.values(row[0][0]);
         let id = count[0]+1;
-        //console.log("reached6.2");
-       // console.log(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link)
-           // VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
 
-        await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
-            VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
+        await this.create(id,batchID,title,authors,abstract,link);
         let k;
         //console.log("reached6.3");
 
         //console.log("reached7");
         for (k=0;k<owners.length;k++){
-            await db.execute(`INSERT INTO thesisowner(ThesisID,UserID)
-            VALUES(${id},${owners[k]})`);
+            await Thesisowner.create(id,owners[k]);
         }
 
         return 1;
@@ -105,16 +98,15 @@ where c.ThesisID=${id}`);
     static async EditThesis(id,batchID,title,authors,abstract,link,owners){
         let i;
         for(i=0;i<owners.length;i++){
-            let row2 = await db.execute(`SELECT ID FROM user where ID=${owners[i]}`);
-            //let row2 = User.isUser(owners[i]);
+
+            let row2 = await User.isUser(owners[i]);
+
             if(row2[0].length===0){
                 return null;
             }
         }
 
-        await db.execute(`UPDATE thesisarchive
-        SET BatchID=${batchID},Title='${title}',Authors='${authors}',Abstract='${abstract}',Link='${link}'
-        WHERE ID=${id};`);
+        await this.update(id,batchID,title,authors,abstract,link);
         let k;
 
        /*for (k=0;k<owners.length;k++){
@@ -124,8 +116,22 @@ where c.ThesisID=${id}`);
 
         return 1;
     }
+    static async findUsers(thesisID){
+        return db.execute(`SELECT o.UserID FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.ID=${thesisID};`);
+    }
+    static async update(id,batchID,title,authors,abstract,link){
+        await db.execute(`UPDATE thesisarchive
+        SET BatchID=${batchID},Title='${title}',Authors='${authors}',Abstract='${abstract}',Link='${link}'
+        WHERE ID=${id};`);
+    }
+
+    static async create(id,batchID,title,authors,abstract,link){
+        await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
+            VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
+    }
+
     static async userAuthorization(thesisID,userID){
-        let row = await db.execute(`SELECT o.UserID FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.ID=${thesisID}`);
+        let row = await this.findUsers(thesisID);
         let c = row[0].length;
         let i;
         for(i=0;i<c;i++){
@@ -149,5 +155,18 @@ where c.ThesisID=${id}`);
 
         await db.execute(`DELETE FROM thesisarchive WHERE ID=${id}`);
 
+    }
+    static async findComments(id){
+        return  db.execute(`SELECT u.ID AS UID,u.Name,c.ID AS CID,c.Description,c.Date from (thesisarchive t join comment c on t.ID = c.ThesisID) JOIN user u on u.ID = c.UserID
+where c.ThesisID=${id};`);
+    }
+    static async findDetails(id){
+        return db.execute(`SELECT o.UserID,t.Title,t.Authors,t.Abstract,t.Link FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.id = ${id};`);
+    }
+    static async getThesisTitle(batchID){
+        return db.execute(`SELECT ID,Title FROM thesisarchive WHERE batchID = ${batchID};`);
+    }
+    static async getMaxID(){
+        return db.execute(`SELECT MAX(ID) FROM thesisarchive;`);
     }
 };

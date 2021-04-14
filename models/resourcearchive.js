@@ -1,5 +1,5 @@
 const db = require("../db");
-
+const Batch = require('../models/batch');
 
 module.exports = class Resourcearchive {
     constructor(resourcearchive) {
@@ -12,7 +12,7 @@ module.exports = class Resourcearchive {
 
 static async fetchAll() {
     let Array=[];
-    let row2 = await db.execute(`SELECT ID FROM batch;`);
+    let row2 = await Batch.getBatchID();
     let batches=[];
     let j;
     for(j=0;j<row2[0].length;j++){
@@ -23,7 +23,7 @@ static async fetchAll() {
     for(k=0;k<batches.length;k++){
         let batch_no = batches[k][0]
 
-        let row = await db.execute(`SELECT Level,Term,Link FROM resourcearchive WHERE BatchID = ${batch_no};`);
+        let row = await this.getResources(batch_no);
 
         let c = row[0].length;
         if(row[0].length===0){
@@ -46,4 +46,7 @@ static async fetchAll() {
     }
     return Array;
 }
+    static async getResources(batch_no){
+       return  db.execute(`SELECT Level,Term,Link FROM resourcearchive WHERE BatchID = ${batch_no};`);
+    }
 };

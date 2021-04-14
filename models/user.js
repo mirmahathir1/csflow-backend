@@ -71,4 +71,7 @@ module.exports = class User {
         let row = await db.execute(`SELECT ID FROM user where ID=${id}`);
         return row;
     }
+    static async getUserDetails(userid){
+        return  db.execute(`SELECT Name,ProfilePic,ID,Karma FROM user where ID=${userid}`);
+    }
 };

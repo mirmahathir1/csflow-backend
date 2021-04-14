@@ -5,7 +5,7 @@ module.exports = class Batch{
         this.batchname=batch.name;
     }
     static async findBatchList(){
-        let row = await db.execute(`SELECT ID FROM batch;`);
+        let row = await this.getBatchID();
 
         let array=[];
         let c = row[0].length;
@@ -18,5 +18,8 @@ module.exports = class Batch{
         }
 
         return array;
+    }
+    static async getBatchID(){
+        return db.execute(`SELECT ID FROM batch;`);
     }
 };
