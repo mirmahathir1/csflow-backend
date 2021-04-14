@@ -75,14 +75,17 @@ exports.postThesis = async(req,res,next)=>{
         let title = req.body.title;
         let Writers = req.body.writers;
 
+        console.log("reached1");
         let writers = Writers.join(",");
         let description = req.body.description;
         let link = req.body.link;
         let owners = req.body.owners;
         const errors = validationResult(req);
+        console.log("reached2");
         if (!errors.isEmpty()) {
             throw new ErrorHandler(400,"Missing/ miswritten fields in request",null);
         }
+        console.log("reached3");
         let i,j;
         for(i=0;i<owners.length;i++){
 
@@ -90,16 +93,19 @@ exports.postThesis = async(req,res,next)=>{
                 throw new ErrorHandler(400,"Missing/ miswritten fields in request",null);
             }
         }
+        console.log("reached4");
         for(j=0;j<Writers.length;j++){
 
             if(typeof Writers[j]!="string"){
                 throw new ErrorHandler(400,"Missing/ miswritten fields in request",null);
             }
         }
+        console.log("reached5");
         let response = await Thesisarchive.saveThesis(batchid,title,writers,description,link,owners);
         if(!response){
             throw new ErrorHandler(400,"Student ID not found",null);
         }
+
         return res.status(201).send(new SuccessResponse("OK",201,"Thesis created Successfully",null));
     }catch (e) {
         next(e);
