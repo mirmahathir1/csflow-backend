@@ -1,5 +1,5 @@
 const db = require('../db');
-
+const User = require('../models/user');
 module.exports = class Thesisarchive {
     constructor(thesisarchive) {
         this.id = thesisarchive.ID;
@@ -79,8 +79,6 @@ where c.ThesisID=${id}`);
                 return null;
             }
         }
-
-
         let row = await db.execute(`SELECT MAX(ID) FROM thesisarchive;`);
 
         //console.log("reached6");
@@ -88,8 +86,8 @@ where c.ThesisID=${id}`);
         let count = Object.values(row[0][0]);
         let id = count[0]+1;
         //console.log("reached6.2");
-        console.log(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
-            VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
+       // console.log(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link)
+           // VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
 
         await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
             VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
@@ -102,7 +100,28 @@ where c.ThesisID=${id}`);
             VALUES(${id},${owners[k]})`);
         }
 
-        //console.log("reached8");
+        return 1;
+    }
+    static async EditThesis(id,batchID,title,authors,abstract,link,owners){
+        let i;
+        for(i=0;i<owners.length;i++){
+            let row2 = await db.execute(`SELECT ID FROM user where ID=${owners[i]}`);
+            //let row2 = User.isUser(owners[i]);
+            if(row2[0].length===0){
+                return null;
+            }
+        }
+
+        await db.execute(`UPDATE thesisarchive
+        SET BatchID=${batchID},Title='${title}',Authors='${authors}',Abstract='${abstract}',Link='${link}'
+        WHERE ID=${id};`);
+        let k;
+
+       /*for (k=0;k<owners.length;k++){
+            await db.execute(`UPDATE thesisowner
+            SET UserID=${owners[k]} WHERE ThesisID=${id};`);
+        }*/
+
         return 1;
     }
     static async userAuthorization(thesisID,userID){
@@ -129,7 +148,6 @@ where c.ThesisID=${id}`);
     static async DeleteThesis(id){
 
         await db.execute(`DELETE FROM thesisarchive WHERE ID=${id}`);
-
 
     }
 };

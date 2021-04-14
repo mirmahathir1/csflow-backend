@@ -20,6 +20,11 @@ router.delete('/thesis/:id',
     authenticate.handleAuthentication,
     archiveController.deleteThesis
 )
+router.patch('/thesis/:id',
+    authenticate.handleAuthentication,
+    thesisValidator.validateDetails(),
+    archiveController.editThesis
+)
 router.get('/batch',
     archiveController.getBatchList
 )

@@ -67,4 +67,8 @@ module.exports = class User {
     saveToken(token){
         return db.execute(`INSERT INTO token(studentID,token) VALUES(${this.id},'${token}');`);
     }
+    static async isUser(id){
+        let row = await db.execute(`SELECT ID FROM user where ID=${id}`);
+        return row;
+    }
 };
