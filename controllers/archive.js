@@ -108,6 +108,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
 
         let Details = {
             title: firstThesis.Title,
+            link: firstThesis.Link,
             writers: array,
             description: firstThesis.Abstract,
             owners: owners,
