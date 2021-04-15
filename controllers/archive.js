@@ -320,3 +320,193 @@ exports.findProjectList = async(req,res,next)=>{
         next(e);
     }
 };
+
+exports.postProject = async (req, res, next) => {
+    try {
+
+        let user = res.locals.middlewareResponse.user;
+
+        let batchid = user.batchID;
+
+        let title = req.body.title;
+        let codeLink = req.body.github;
+        let videoLink = req.body.youtube;
+
+        let description = req.body.description;
+        let courseNo = req.body.course;
+        let owners = req.body.owners;
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+
+        let i, j;
+        for (i = 0; i < owners.length; i++) {
+
+            if (typeof owners[i] != "number") {
+                throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+            }
+        }
+        let courseID = await Coursedetails.getCourseID(courseNo);
+        if(courseID.length===0){
+            throw new ErrorHandler(404,"Course not found",null);
+        }
+        for (i = 0; i < owners.length; i++) {
+            // let row2 = await User.isUser(owners[i]);
+            if (!await User.isUser(owners[i])) {
+                throw new ErrorHandler(404, "Student ID not found", null);
+            }
+        }
+        let row = await Projectarchive.getMaxID();
+
+        let count = Object.values(row);
+        let id = count[0] + 1;
+
+
+        await Projectarchive.create(id,courseID[0].ID,batchid,title,description,videoLink,codeLink);
+        let k;
+
+        for (k = 0; k < owners.length; k++) {
+            await Projectowner.create(id, owners[k]);
+        }
+
+        return res.status(201).send(new SuccessResponse("OK", 201, "Project created Successfully", null));
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.editProject = async (req, res, next) => {
+    try {
+
+        let user = res.locals.middlewareResponse.user;
+
+        let batchid = user.batchID;
+        let userid = user.id;
+        let title = req.body.title;
+        let codeLink = req.body.github;
+        let videoLink = req.body.youtube;
+
+        let description = req.body.description;
+        let courseNo = req.body.course;
+        let owners = req.body.owners;
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+
+        let i, j;
+        for (i = 0; i < owners.length; i++) {
+
+            if (typeof owners[i] != "number") {
+                throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+            }
+        }
+        let project = await Projectarchive.findProject(req.params.id);
+        if (project.length===0) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+
+        let auth = await Projectarchive.userAuthorization(req.params.id, userid);
+        if (!auth) {
+            throw new ErrorHandler(401, "User is unauthorized to edit this project", null);
+        }
+        let courseID = await Coursedetails.getCourseID(courseNo);
+        if(courseID.length===0){
+            throw new ErrorHandler(404,"Course not found",null);
+        }
+        for (i = 0; i < owners.length; i++) {
+            // let row2 = await User.isUser(owners[i]);
+            if (!await User.isUser(owners[i])) {
+                throw new ErrorHandler(404, "Student ID not found", null);
+            }
+        }
+
+
+
+        await Projectarchive.update(req.params.id,courseID[0].ID,batchid,title,description,videoLink,codeLink);
+
+        /*for (k = 0; k < owners.length; k++) {
+            await Projectowner.create(id, owners[k]);
+        }*/
+
+        return res.status(201).send(new SuccessResponse("OK", 201, "Project edited Successfully", null));
+    } catch (e) {
+        next(e);
+    }
+};
+exports.deleteProject = async (req, res, next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let project = await Projectarchive.findProject(req.params.id);
+        if (project.length===0) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+        let auth = await Projectarchive.userAuthorization(req.params.id, userid);
+
+        if (!auth) {
+            throw new ErrorHandler(401, "User is unauthorized to delete this project", null);
+        }
+
+        await Projectarchive.DeleteProject(req.params.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200, "Project deleted successfully", null));
+    } catch (e) {
+        next(e);
+    }
+};
+exports.getProjectDetailsByProjectID = async (req, res, next) => {
+    try {
+
+        let projects = await Projectarchive.findDetailsByProjectID(req.params.id);
+
+        if (projects.length === 0) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+
+
+        let i;
+        let owners = [];
+        for (i = 0; i < projects.length; i++) {
+
+            let userid = projects[i].UserID;
+            let user = await User.getUserDetailsByUserID(userid);
+            owners.push(user);
+        }
+
+        let rawComments = await Projectarchive.findCommentsByProjectID(req.params.id);
+        let firstProject = projects[0];
+
+        let comments = [];
+
+        let k;
+
+        for (k = 0; k < rawComments.length; k++) {
+            let singleComment = rawComments[k];
+            comments.push({
+                id: singleComment.CID,
+                comment: singleComment.Description,
+                name: singleComment.Name,
+                studentID: singleComment.UID,
+                timestamp: singleComment.Date
+            });
+        }
+
+        let Details = {
+            title: firstProject.Title,
+            description: firstProject.Description,
+            github: firstProject.CodeLink,
+            youtube:firstProject.VideoLink,
+            owners: owners,
+            comments: comments
+        };
+
+        return res.status(200).send(new SuccessResponse("OK", 200, "Fetched project details successfully", Details));
+    } catch (e) {
+        next(e);
+    }
+};

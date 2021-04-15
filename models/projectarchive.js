@@ -16,31 +16,29 @@ module.exports = class Projectarchive {
     }
     static async update(id,courseID,batchID,title,description,videolink,codelink){
         await db.execute(`UPDATE projectarchive
-        SET BatchID=${batchID},Title='${title}',VideoLink='${videolink}',Description='${description}',CodeLink='${codelink}'
+        SET CourseID=${courseID},BatchID=${batchID},Title='${title}',VideoLink='${videolink}',Description='${description}',CodeLink='${codelink}'
         WHERE ID=${id};`);
     }
 
     static async create(id,courseID,batchID,title,description,videolink,codelink){
-        await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
-            VALUES(${id},${courseID},${batchID},'${title}','${description}','${videolink}','${codelink}')`);
+        await db.execute(`INSERT INTO projectarchive(ID,CourseID,BatchID,Title,Description,VideoLink,CodeLink) 
+            VALUES(${id},${courseID},${batchID},'${title}','${description}','${videolink}','${codelink}');`);
     }
     static async userAuthorization(projectID,userID){
-        let row = await this.findUsers(projectID);
-        let c = row.length;
+        let result = await this.findUsers(projectID);
+        let c = result.length;
         let i;
         for(i=0;i<c;i++){
-            if(row[i].UserID===userID){
+            if(result[i].UserID===userID){
                 return 1;
             }
         }
         return null;
     }
     static async findProject(id){
-        let row = await db.execute(`SELECT ID FROM projectarchive WHERE ID=${id}`);
-        if(row[0].length===0){
-            return null;
-        }
-        return 1;
+        let result = await db.execute(`SELECT ID FROM projectarchive WHERE ID=${id}`);
+        return result[0];
+
     }
     static async DeleteProject(id){
         await db.execute(`DELETE FROM projectarchive WHERE ID=${id}`);
@@ -54,10 +52,7 @@ where c.ProjectID=${id};`);
         let result = await db.execute(`SELECT o.UserID,t.Title,t.Description,t.VideoLink,t.CodeLink  FROM projectarchive t JOIN projectowner o ON t.ID=o.ProjectID WHERE t.id = ${id};`)
         return result[0];
     }
-    static async getProjectTitleByBatchID(batchID){
-        let result = await db.execute(`SELECT ID,Title FROM projectarchive WHERE batchID = ${batchID};`);
-        return result[0];
-    }
+
     static async getMaxID(){
         let result = await db.execute(`SELECT MAX(ID) FROM projectarchive;`);
         return result[0][0];
