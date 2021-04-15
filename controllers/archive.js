@@ -237,16 +237,17 @@ exports.editThesis = async (req, res, next) => {
         if (!thesis) {
             throw new ErrorHandler(404, "Thesis not found", null);
         }
-        let auth = await Thesisarchive.userAuthorization(req.params.id, userid);
-        if (!auth) {
-            throw new ErrorHandler(401, "User is unauthorized to delete this thesis", null);
-        }
-
         for (i = 0; i < owners.length; i++) {
             if (!await User.isUser(owners[i])) {
                 throw new ErrorHandler(404, "Student ID not found", null);
             }
         }
+        let auth = await Thesisarchive.userAuthorization(req.params.id, userid);
+        if (!auth) {
+            throw new ErrorHandler(401, "User is unauthorized to edit this thesis", null);
+        }
+
+
 
         await Thesisarchive.update(req.params.id, batchid, title, writers, description, link);
 
