@@ -1,6 +1,9 @@
 const Resourcearchive = require('../models/resourcearchive');
 const Thesisarchive = require('../models/thesisarchive');
 const ThesisOwner = require('../models/thesisowner');
+const Projectarchive = require('../models/projectarchive');
+const Projectowner = require('../models/projectowner');
+const Coursedetails = require('../models/coursedetails');
 const Batch = require('../models/batch');
 const User = require('../models/user');
 const {validationResult} = require('express-validator');
@@ -36,10 +39,10 @@ exports.getAllDriveLinks = async (req, res, next) => {
 
             let rawResources = await Resourcearchive.getResourcesByBatchID(batch_no);
 
-            if (rawResources.length === 0) {
-                throw new ErrorHandler(404, "Archive not found", null);
+            /*if (rawResources.length === 0) {
+                //throw new ErrorHandler(404, "Archive not found", null);
                 //return res.status(200).send(new SuccessResponse("OK", 200, "Fetched drive links successfully", null));
-            }
+            }*/
 
             finalCollectionOfDriveLinks.push({
                 batch: batch_no,
@@ -58,10 +61,21 @@ exports.getThesisByBatchID = async (req, res, next) => {
         if (!errors.isEmpty()) {
             throw new ErrorHandler(400, errors.errors[0].msg, errors);
         }
+        let batches = await Batch.getBatches();
+        let flag=false;
+        batches.forEach((batch)=>{
+            if(batch.ID===parseInt(req.params.batchNumber)){
+                flag=true;
+            }
+        })
+
+        if(!flag){
+            throw new ErrorHandler(404,"Batch not found",null);
+        }
         let thesisTitles = await Thesisarchive.getThesisTitleByBatchID(req.params.batchNumber);
 
         if (thesisTitles.length === 0) {
-            throw new ErrorHandler(404, "Batch not found", null);
+            return res.status(200).send(new SuccessResponse("OK", 200, "Thesis not found", []));
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200, "List of theses fetched successfully", thesisTitles));
@@ -72,6 +86,7 @@ exports.getThesisByBatchID = async (req, res, next) => {
 
 exports.getThesisDetailsByThesisID = async (req, res, next) => {
     try {
+
         let theses = await Thesisarchive.findDetailsByThesisID(req.params.id);
 
         if (theses.length === 0) {
@@ -256,6 +271,52 @@ exports.editThesis = async (req, res, next) => {
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Thesis edited Successfully", null));
     } catch (e) {
+        next(e);
+    }
+};
+exports.findCoursesOfProject = async(req,res,next)=>{
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
+
+        let courseListOfProject = await Coursedetails.findCourses(req.params.batchNumber);
+        if(courseListOfProject.length===0){
+            throw new ErrorHandler(404,"Batch not found",null);
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "Courses with projects fetched successfully", courseListOfProject));
+    }catch (e) {
+        next(e);
+    }
+};
+exports.findProjectList = async(req,res,next)=>{
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
+        let batches = await Batch.getBatches();
+        let flag=false;
+        batches.forEach((batch)=>{
+            if(batch.ID===parseInt(req.params.batchNumber)){
+                flag=true;
+            }
+        })
+
+        if(!flag){
+            throw new ErrorHandler(404,"Batch not found",null);
+        }
+        let courseID = await Coursedetails.getCourseID(req.params.courseNum);
+        if(courseID.length===0){
+            throw new ErrorHandler(404,"Course not found",null);
+        }
+        let projectList = await Projectarchive.findProjectList(req.params.batchNumber,courseID[0].ID);
+        if(projectList.length===0){
+            return res.status(200).send(new SuccessResponse("OK", 200, "Project not found", []));
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "List of project fetched successfully", projectList));
+    }catch (e) {
         next(e);
     }
 };
