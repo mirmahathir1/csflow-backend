@@ -37,7 +37,8 @@ exports.getAllDriveLinks = async (req, res, next) => {
             let rawResources = await Resourcearchive.getResourcesByBatchID(batch_no);
 
             if (rawResources.length === 0) {
-                return res.status(200).send(new SuccessResponse("OK", 200, "Fetched drive links successfully", null));
+                throw new ErrorHandler(404, "Archive not found", null);
+                //return res.status(200).send(new SuccessResponse("OK", 200, "Fetched drive links successfully", null));
             }
 
             finalCollectionOfDriveLinks.push({
