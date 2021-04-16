@@ -1,6 +1,10 @@
 const bcrypt = require('bcryptjs');
-bcrypt.genSalt(10, (err,salt) => {
-    bcrypt.hash("test1234", salt,(err, hash) => {
-        console.log("HASH VALUE: ",hash);
-    })
-});
+
+
+const run = async () => {
+    let salt = await bcrypt.genSalt(10);
+    let hash = await bcrypt.hash("test1234", salt);
+    console.log(hash);
+}
+
+run()

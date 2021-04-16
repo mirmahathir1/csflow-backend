@@ -14,7 +14,22 @@ router.post('/signIn',
     authenticate.handlePOSTLogIn
 );
 
+router.post('/signIn/auto',
+    authenticate.handleAuthentication,
+    authController.autoLogIn,
+);
 
+router.post('/signUp',
+    authValidators.validateSignUp(),
+    authenticate.handlePOSTSignUp,
+    authController.authSignUp,
+);
+
+router.patch('/signUp',
+    authValidators.validateSignUpComplete(),
+    authenticate.handlePATCHSignUpComplete,
+    authController.authSignUpComplete,
+);
 
 router.post('/signOutAllDevice',
     authenticate.handleAuthentication,
@@ -25,7 +40,5 @@ router.post('/signOut',
     authenticate.handleAuthentication,
     authController.logOut
 );
-
-
 
 module.exports = router;

@@ -1,5 +1,5 @@
 class ErrorHandler extends Error {
-    constructor(statusCode, message,payload) {
+    constructor(statusCode, message, payload) {
         super();
         this.statusCode = statusCode;
         this.status = "ERROR"
@@ -9,7 +9,7 @@ class ErrorHandler extends Error {
 }
 
 const handleError = (err, res) => {
-    const { statusCode, message, payload } = err;
+    const {statusCode, message, payload} = err;
     return res.status(statusCode).send({
         statusCode,
         status: "ERROR",
