@@ -281,9 +281,21 @@ exports.findCoursesOfProject = async(req,res,next)=>{
             throw new ErrorHandler(400, errors.errors[0].msg, errors);
         }
 
+        let batches = await Batch.getBatches();
+        let flag=false;
+        batches.forEach((batch)=>{
+            if(batch.ID===parseInt(req.params.batchNumber)){
+                flag=true;
+            }
+        })
+
+        if(!flag){
+            throw new ErrorHandler(404,"Batch not found",null);
+        }
         let courseListOfProject = await Coursedetails.findCourses(req.params.batchNumber);
         if(courseListOfProject.length===0){
-            throw new ErrorHandler(404,"Batch not found",null);
+            //throw new ErrorHandler(404,"Batch not found",null);
+            return res.status(200).send(new SuccessResponse("OK", 200, "Courses with projects not found",[]));
         }
         return res.status(200).send(new SuccessResponse("OK", 200, "Courses with projects fetched successfully", courseListOfProject));
     }catch (e) {
