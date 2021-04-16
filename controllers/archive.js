@@ -319,7 +319,9 @@ exports.findProjectList = async(req,res,next)=>{
         if(!flag){
             throw new ErrorHandler(404,"Batch not found",null);
         }
-        let courseID = await Coursedetails.getCourseID(req.params.courseNum);
+        let courseArray = req.params.courseNum.split("-");
+        let courseNumber = courseArray.join(" ");
+        let courseID = await Coursedetails.getCourseID(courseNumber);
         if(courseID.length===0){
             throw new ErrorHandler(404,"Course not found",null);
         }
