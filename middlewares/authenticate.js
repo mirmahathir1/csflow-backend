@@ -203,7 +203,7 @@ exports.handlePATCHPasswordRecover = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
 
         const email = await ForgetPassword.getEmailByToken(token);
-        if (!email || email !== response.email)
+        if (email == null || email !== response.email)
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
 
         res.locals.middlewareResponse = await User.findByEmail(email);

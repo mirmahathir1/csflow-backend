@@ -8,7 +8,10 @@ module.exports = class ForgetPassword {
                                        FROM ForgetPassword
                                        WHERE token = '${token}';`);
 
-        return result[0][0].email;
+        if(result[0][0])
+            return result[0][0].email;
+        else
+            return null;
     }
 
     static async saveToken(email, token) {

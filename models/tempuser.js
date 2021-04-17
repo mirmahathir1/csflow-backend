@@ -8,7 +8,10 @@ module.exports = class TempUser {
                                        FROM tempuser
                                         WHERE token='${token}';`);
 
-        return result[0][0];
+        if(result[0][0])
+            return result[0][0];
+        else
+            return null;
     }
 
     static async saveUserTemporarily(name, email, password, token) {
