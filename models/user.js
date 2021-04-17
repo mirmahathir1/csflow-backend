@@ -74,6 +74,12 @@ module.exports = class User {
                            VALUES (${this.id}, '${token}');`);
     }
 
+    changePassword(newPassword) {
+        return db.execute(`UPDATE user
+                           SET password='${newPassword}'
+                           WHERE id = ${this.id}`)
+    }
+
     static async isUser(id) {
         let row = await db.execute(`SELECT ID
                                     FROM user

@@ -4,6 +4,8 @@ const emailValidator = require('deep-email-validator');
 
 const User = require('../models/user');
 const TempUser = require('../models/tempuser');
+const ForgetPassword = require('../models/forgetpassword');
+
 
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
@@ -41,7 +43,7 @@ exports.handlePOSTLogIn = async (req, res, next) => {
 
 exports.handleAuthentication = async (req, res, next) => {
     if (!req.header('Authorization')) {
-        return res.status(401).send(new ErrorHandler(401, 'Authentication header not found'))
+        return res.status(401).send(new ErrorHandler(401, 'Authentication header not found'));
     }
 
     let token;
@@ -115,7 +117,7 @@ exports.handlePATCHSignUpComplete = async (req, res, next) => {
         const token = req.body.token;
         const response = await jwt.verify(token, process.env.BCRYPT_SALT);
 
-        if (response.exp == null && response.email == null && response.random)
+        if (response.exp == null || response.email == null || response.random == null)
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
 
         const tempUser = await TempUser.getTempUserByToken(token);
@@ -123,6 +125,89 @@ exports.handlePATCHSignUpComplete = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
 
         res.locals.middlewareResponse = tempUser;
+        return next();
+    } catch (e) {
+        if (e.message === 'jwt expired')
+            return res.status(400).send(new ErrorHandler(400,
+                "Verification link expired. You must verify your email within one hour."));
+        else
+            return res.status(500).send(new ErrorHandler(500, e.message));
+    }
+};
+
+exports.handlePATCHChangePassword = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            return res.status(400).send(new ErrorHandler(400,
+                "Missing/ miswritten fields in request"));
+
+        const newPassword = req.body.newPassword;
+        if (newPassword.length < 6)
+            return res.status(400).send(new ErrorHandler(400,
+                "New password must have a minimum length of 6 characters"));
+
+        const oldPassword = req.body.oldPassword;
+        const user = res.locals.middlewareResponse.user;
+        const matched = await bcrypt.compare(oldPassword, user.password);
+        if (!matched)
+            return res.status(400).send(new ErrorHandler(400,
+                "Incorrect old password"));
+
+        return next();
+    } catch (e) {
+        return res.status(500).send(new ErrorHandler(500, e.message));
+    }
+};
+
+exports.handlePATCHForgetPassword = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            return res.status(400).send(new ErrorHandler(400,
+                "Missing Email field or Invalid Email."));
+
+        const email = req.body.email;
+        const response = await emailValidator.validate(email);
+        if (!response.valid)
+            return res.status(400).send(new ErrorHandler(400,
+                "Invalid email address"));
+
+        const user = await User.findByEmail(email);
+        // console.log(user);
+        if(!user)
+            return res.status(400).send(new ErrorHandler(400,
+                "Email not found"));
+
+        return next();
+    } catch (e) {
+        return res.status(500).send(new ErrorHandler(500, e.message));
+    }
+};
+
+exports.handlePATCHPasswordRecover = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            return res.status(400).send(new ErrorHandler(400,
+                "Missing/ miswritten fields in request"));
+
+        if(req.body.password.length<6)
+            return res.status(400).send(new ErrorHandler(400,
+                "Password must have a minimum length of 6 characters."));
+
+        const token = req.body.token;
+        const response = await jwt.verify(token, process.env.BCRYPT_SALT);
+
+        if (response.exp == null || response.email == null || response.random == null)
+            return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
+
+        const email = await ForgetPassword.getEmailByToken(token);
+        if (!email || email !== response.email)
+            return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
+
+        res.locals.middlewareResponse = await User.findByEmail(email);
+
         return next();
     } catch (e) {
         if (e.message === 'jwt expired')

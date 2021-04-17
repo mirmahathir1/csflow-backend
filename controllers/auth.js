@@ -1,10 +1,16 @@
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcryptjs');
 
 const {SuccessResponse} = require('../response/success');
 const TempUser = require('../models/tempuser');
+const ForgetPassword = require('../models/forgetpassword');
 const User = require('../models/user');
 
+const getEncryptedPassword = async (password) => {
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+};
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -14,15 +20,27 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const getMailOptions = (mail, token) => {
+const getMailOptions = (mail, text) => {
     return {
         from: 'restapimailtest@gmail.com',
         to: mail,
         subject: 'Verify your CSFlow account',
-        text: 'Use the following link to verify your CSFlow account.\n' +
-            `https://csflow-buet.web.app/#/auth/signUp/complete?token=${token}\n` +
-            'Note: This link is valid for 1 hour only.'
+        text: text
     }
+};
+
+const getSignUpOptions = (mail, token) => {
+    const text = 'Use the following link to verify your CSFlow account.\n' +
+        `https://csflow-buet.web.app/#/auth/signUp/complete?token=${token}\n` +
+        'Note: This link is valid for 1 hour only.';
+    return getMailOptions(mail, text);
+};
+
+const getPasswordRecoverOptions = (mail, token) => {
+    const text = 'Use the following link to recover your password.\n' +
+        `https://csflow-buet.web.app/#/auth/password/recover?token=${token}\n` +
+        'Note: This link is valid for 1 hour only.';
+    return getMailOptions(mail, text);
 };
 
 exports.logOut = async (req, res, next) => {
@@ -67,16 +85,16 @@ exports.authSignUp = async (req, res, next) => {
         const name = res.locals.middlewareResponse.name;
         const password = res.locals.middlewareResponse.password;
 
-        let token = jwt.sign({
+        const token = jwt.sign({
             email,
             exp: Math.floor(Date.now() / 1000) + (60 * 60),
             random: Math.floor(Math.random()*1000000)
         }, process.env.BCRYPT_SALT);
 
-        await TempUser.saveUserTemporarily(name, email, password, token);
-        await transporter.sendMail(getMailOptions(email, token));
+        await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
+        await transporter.sendMail(getSignUpOptions(email, token));
 
-        res.status(200).send(new SuccessResponse(200, "OK",
+        return res.status(200).send(new SuccessResponse(200, "OK",
             "A verification email has been sent to your email.", null));
     } catch (e) {
         next(e);
@@ -94,9 +112,59 @@ exports.authSignUpComplete = async (req, res, next) => {
         await User.addUser(tempUser);
         // console.log("Done")
 
-        res.status(200).send(new SuccessResponse(200, "OK",
+        return res.status(200).send(new SuccessResponse(200, "OK",
             "Sign up completed.", null));
 
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.changePassword = async (req, res, next) => {
+    try {
+        const user = res.locals.middlewareResponse.user;
+        // console.log(user);
+        const encryptedNewPassword = await getEncryptedPassword(req.body.newPassword);
+        await user.changePassword(encryptedNewPassword);
+
+        return res.status(200).send(new SuccessResponse(200, "OK",
+            "Password change successful.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.forgetPassword = async (req, res, next) => {
+    try {
+        const email = req.body.email;
+
+        const token = jwt.sign({
+            email,
+            exp: Math.floor(Date.now() / 1000) + (60 * 60),
+            random: Math.floor(Math.random()*1000000)
+        }, process.env.BCRYPT_SALT);
+
+        await ForgetPassword.saveToken(email, token);
+        await transporter.sendMail(getPasswordRecoverOptions(email, token));
+
+        return res.status(200).send(new SuccessResponse(200, "OK",
+            "An email has been sent for password recovery.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.recoverPassword = async (req, res, next) => {
+    try {
+        const user = res.locals.middlewareResponse;
+
+        await ForgetPassword.deleteByEmail(user.email);
+        await user.changePassword(getEncryptedPassword(req.body.password));
+
+        return res.status(200).send(new SuccessResponse(200, "OK",
+            "Password changed successfully.", null));
     } catch (e) {
         next(e);
     }

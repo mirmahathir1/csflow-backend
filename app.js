@@ -25,10 +25,13 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
+app.get("*", (req, res) => {
+    res.status(404).send("Unrecognised route");
+});
+
 app.use((err, req, res, next) => {
     handleError(err, res);
 });
-
 
 app.listen(port, () => {
     console.log(`App listening at http://localhost:${port}`)

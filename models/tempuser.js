@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 
 const db = require('../db');
 
@@ -16,10 +15,8 @@ module.exports = class TempUser {
         await TempUser.deleteAllTimeExceedAccount();
         await TempUser.deleteTempAccountByEmail(email);
         // const encyptedPassword = await bcrypt.encrypt()
-        let salt = await bcrypt.genSalt(10);
-        let hash = await bcrypt.hash(password, salt);
         return db.execute(`INSERT INTO tempuser(email, name, password, token)
-                           VALUES ('${email}', '${name}', '${hash}', '${token}')`);
+                           VALUES ('${email}', '${name}', '${password}', '${token}')`);
     }
 
     static async deleteTempAccountByEmail(email) {
