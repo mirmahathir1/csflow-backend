@@ -86,7 +86,10 @@ exports.getThesisByBatchID = async (req, res, next) => {
 
 exports.getThesisDetailsByThesisID = async (req, res, next) => {
     try {
-
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
         let theses = await Thesisarchive.findDetailsByThesisID(req.params.id);
 
         if (theses.length === 0) {
@@ -177,6 +180,15 @@ exports.postThesis = async (req, res, next) => {
                 throw new ErrorHandler(404, "Student ID not found", null);
             }
         }
+        let m,n;
+        for(m=0;m<owners.length;m++){
+            for(n=m+1;n<owners.length;n++){
+                if(owners[m]===owners[n]){
+                    throw new ErrorHandler(400,"Duplicate owners found",null);
+                }
+            }
+        }
+
         let row = await Thesisarchive.getMaxID();
 
         let count = Object.values(row);
@@ -197,6 +209,10 @@ exports.postThesis = async (req, res, next) => {
 };
 exports.deleteThesis = async (req, res, next) => {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
         let user = res.locals.middlewareResponse.user;
 
         let userid = user.id;
@@ -265,7 +281,14 @@ exports.editThesis = async (req, res, next) => {
             }
         }
 
-
+        let m,n;
+        for(m=0;m<owners.length;m++){
+            for(n=m+1;n<owners.length;n++){
+                if(owners[m]===owners[n]){
+                    throw new ErrorHandler(400,"Duplicate owners found",null);
+                }
+            }
+        }
         await Thesisarchive.update(req.params.id, batchid, title, writers, description, link);
 
 
@@ -362,6 +385,15 @@ exports.postProject = async (req, res, next) => {
                 throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
             }
         }
+
+        let m,n;
+        for(m=0;m<owners.length;m++){
+            for(n=m+1;n<owners.length;n++){
+                if(owners[m]===owners[n]){
+                    throw new ErrorHandler(400,"Duplicate owners found",null);
+                }
+            }
+        }
         let courseID = await Coursedetails.getCourseID(courseNo);
         if(courseID.length===0){
             throw new ErrorHandler(404,"Course not found",null);
@@ -438,7 +470,14 @@ exports.editProject = async (req, res, next) => {
             }
         }
 
-
+        let m,n;
+        for(m=0;m<owners.length;m++){
+            for(n=m+1;n<owners.length;n++){
+                if(owners[m]===owners[n]){
+                    throw new ErrorHandler(400,"Duplicate owners found",null);
+                }
+            }
+        }
 
         await Projectarchive.update(req.params.id,courseID[0].ID,batchid,title,description,videoLink,codeLink);
 
@@ -453,6 +492,10 @@ exports.editProject = async (req, res, next) => {
 };
 exports.deleteProject = async (req, res, next) => {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
         let user = res.locals.middlewareResponse.user;
 
         let userid = user.id;
@@ -475,7 +518,10 @@ exports.deleteProject = async (req, res, next) => {
 };
 exports.getProjectDetailsByProjectID = async (req, res, next) => {
     try {
-
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
         let projects = await Projectarchive.findDetailsByProjectID(req.params.id);
 
         if (projects.length === 0) {
