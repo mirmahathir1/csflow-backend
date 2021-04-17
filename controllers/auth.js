@@ -161,7 +161,8 @@ exports.recoverPassword = async (req, res, next) => {
         const user = res.locals.middlewareResponse;
 
         await ForgetPassword.deleteByEmail(user.email);
-        await user.changePassword(getEncryptedPassword(req.body.password));
+        const encryptedNewPassword = await getEncryptedPassword(req.body.newPassword);
+        await user.changePassword(encryptedNewPassword);
 
         return res.status(200).send(new SuccessResponse(200, "OK",
             "Password changed successfully.", null));
