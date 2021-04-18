@@ -1,23 +1,41 @@
-const {body, param, header, query} = require('express-validator/check')
+const {body, param, header, query} = require('express-validator/check');
+
+const {isFieldExist, validateEmail} = require('./common');
 
 exports.validateSignIn = () => {
     return [
-        body('email', 'Please provide email').exists(),
-        body('email', 'Provided email is invalid').isEmail(),
-        body('password', 'Invalid password field').exists(),
+        ...validateEmail(),
+        isFieldExist('password'),
     ];
 };
 
 exports.validateSignUp = () => {
     return [
         ...exports.validateSignIn(),
-        body('name', 'Please provide name').exists(),
+        isFieldExist('name'),
     ];
 };
 
 exports.validateSignUpComplete = () => {
     return [
-        body('token', 'Please provide token').exists(),
+        isFieldExist('token'),
     ];
 };
 
+exports.validatePasswordChange = () => {
+    return [
+        isFieldExist('oldPassword'),
+        isFieldExist('newPassword'),
+    ];
+};
+
+exports.validateForgetPassword = () => {
+    return validateEmail();
+};
+
+exports.validatePasswordRecover = () => {
+    return [
+        isFieldExist('token'),
+        isFieldExist('password'),
+    ];
+};

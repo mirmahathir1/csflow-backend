@@ -9,12 +9,13 @@ class ErrorHandler extends Error {
 }
 
 const handleError = (err, res) => {
+    console.log(err);
     const {statusCode, message, payload} = err;
     return res.status(statusCode).send({
         statusCode,
         status: "ERROR",
         message,
-        payload
+        payload: null
     });
 };
 

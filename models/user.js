@@ -25,13 +25,10 @@ module.exports = class User {
     static async findById(id) {
         let resultRaw = await db.execute(`SELECT *
                                           FROM user
-                                          WHERE id = ${id}`)
-        if (resultRaw[0].length === 0) {
+                                          WHERE id = ${id}`);
+        if (resultRaw[0].length === 0)
             return null;
-        }
-        let user = new User(resultRaw[0][0]);
-
-        return user;
+        return new User(resultRaw[0][0]);
     }
 
     static async findByEmail(email) {
@@ -42,8 +39,7 @@ module.exports = class User {
         if (resultRaw[0].length === 0) {
             return null;
         }
-        let user = new User(resultRaw[0][0]);
-        return user;
+        return new User(resultRaw[0][0]);
     }
 
     static async findByToken(token) {
@@ -53,8 +49,7 @@ module.exports = class User {
         if (resultRaw[0].length === 0) {
             return null;
         }
-        let user = new User(resultRaw[0][0]);
-        return user;
+        return new User(resultRaw[0][0]);
     }
 
     deleteToken(token) {
@@ -72,6 +67,30 @@ module.exports = class User {
     saveToken(token) {
         return db.execute(`INSERT INTO token(studentID, token)
                            VALUES (${this.id}, '${token}');`);
+    }
+
+    changePassword(newPassword) {
+        return db.execute(`UPDATE user
+                           SET password='${newPassword}'
+                           WHERE id = ${this.id}`)
+    }
+
+    deleteMe() {
+        return db.execute(`DELETE
+                           FROM user
+                           WHERE id = ${this.id}`);
+    }
+
+    saveProfilePicLink(link) {
+        return db.execute(`UPDATE user
+                           SET profilepic='${link}'
+                           WHERE id = ${this.id}`)
+    }
+
+    updateName(name) {
+        return db.execute(`UPDATE user
+                           SET name='${name}'
+                           WHERE id = ${this.id}`)
     }
 
     static async isUser(id) {

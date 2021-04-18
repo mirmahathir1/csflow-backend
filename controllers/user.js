@@ -3,6 +3,9 @@ const User = require('../models/user');
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
+const {uploadAnImage} = require('../storage/storage');
+const {deleteImage} = require('../storage/cleanup');
+
 
 exports.viewProfile = async (req, res, next) => {
     try {
@@ -35,3 +38,50 @@ exports.viewMyProfile = async (req, res, next) => {
         next(e);
     }
 };
+
+exports.deleteProfile = async (req, res, next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        await user.deleteMe();
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Account deletion successful", null));
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.updateName = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            throw new ErrorHandler(400, errors);
+
+        let user = res.locals.middlewareResponse.user;
+        await user.updateName(req.body.name);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Edit successful", null));
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.uploadProfilePic = async (req, res, next) => {
+    try {
+        if(!req.file)
+            return res.status(400).send(new ErrorHandler(400, "No file received"));
+
+        const imageLink = await uploadAnImage(req.file, "profile-pic");
+
+        let user = res.locals.middlewareResponse.user;
+        await user.saveProfilePicLink(imageLink);
+
+        await deleteImage(user.profilePic);
+        //console.log("send")
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            `Uploaded mage successfully. New Image link ${imageLink}`, null));
+    } catch (e) {
+        next(e);
+    }
+};
+

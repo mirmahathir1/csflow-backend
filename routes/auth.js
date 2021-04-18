@@ -32,6 +32,25 @@ router.patch('/signUp',
     authController.authSignUpComplete,
 );
 
+router.patch('/password/change',
+    authValidators.validatePasswordChange(),
+    authenticate.handleAuthentication,
+    authenticate.handlePATCHChangePassword,
+    authController.changePassword,
+);
+
+router.patch('/password/forgot',
+    authValidators.validateForgetPassword(),
+    authenticate.handlePATCHForgetPassword,
+    authController.forgetPassword,
+);
+
+router.patch('/password/recover',
+    authValidators.validatePasswordRecover(),
+    authenticate.handlePATCHPasswordRecover,
+    authController.recoverPassword,
+);
+
 router.post('/signOutAllDevice',
     authenticate.handleAuthentication,
     authController.logOutAllDevices,
