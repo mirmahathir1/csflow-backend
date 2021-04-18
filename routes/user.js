@@ -14,8 +14,8 @@ router.get('/me',
 )
 
 router.get('/:userId',
-    authenticate.handleAuthentication,
     userValidators.validateDetails(),
+    authenticate.handleAuthentication,
     userController.viewProfile
 );
 
@@ -24,10 +24,11 @@ router.delete('',
     userController.deleteProfile,
 );
 
-// router.patch('',
-//     authenticate.handleAuthentication,
-//     userController.changeProfile,
-// );
+router.patch('',
+    userValidators.validateUpdateName(),
+    authenticate.handleAuthentication,
+    userController.updateName,
+);
 
 router.patch('/profilePic',
     authenticate.handleAuthentication,

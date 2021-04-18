@@ -49,12 +49,17 @@ exports.deleteProfile = async (req, res, next) => {
     }
 };
 
-exports.changeProfile = async (req, res, next) => {
+exports.updateName = async (req, res, next) => {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            throw new ErrorHandler(400, errors);
+
         let user = res.locals.middlewareResponse.user;
-        // await user.deleteMe();
+        await user.updateName(req.body.name);
+
         return res.status(200).send(new SuccessResponse("OK", 200,
-            "NOt implemented", null));
+            "Edit successful", null));
     } catch (e) {
         next(e);
     }

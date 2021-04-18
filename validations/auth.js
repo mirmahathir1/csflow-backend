@@ -1,15 +1,6 @@
 const {body, param, header, query} = require('express-validator/check');
 
-const isFieldExist = (fieldName) => {
-    return body(fieldName, `Please provide a field with name ${fieldName}`).exists();
-};
-
-const validateEmail = () => {
-    return [
-        isFieldExist('email'),
-        body('email', 'Provided email is invalid').isEmail(),
-    ];
-};
+const {isFieldExist, validateEmail} = require('./common');
 
 exports.validateSignIn = () => {
     return [
