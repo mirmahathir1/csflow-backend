@@ -29,10 +29,10 @@ router.delete('',
 //     userController.changeProfile,
 // );
 
-// router.patch('/profilePic',
-//     authenticate.handleAuthentication,
-//     storage.upload.single('image'),
-//     userController.uploadProfilePic,
-// );
+router.patch('/profilePic',
+    authenticate.handleAuthentication,
+    storage.upload.single('image'),
+    userController.uploadProfilePic,
+);
 
 module.exports = router;
