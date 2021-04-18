@@ -116,6 +116,7 @@ exports.authSignUpComplete = async (req, res, next) => {
             "Sign up completed.", null));
 
     } catch (e) {
+        // console.log(e)
         next(e);
     }
 };

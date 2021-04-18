@@ -96,13 +96,6 @@ exports.handlePOSTSignUp = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Associated email address already has an account"));
 
-        try{
-            parseInt(email.substring(0, 7))
-        }catch (e) {
-            return res.status(400).send(new ErrorHandler(400,
-                "Please Sign Up using departmental email."));
-        }
-
         if (email.substring(2, 4) !== '05')
             return res.status(400).send(new ErrorHandler(400,
                 "Please Sign Up using departmental email."));
@@ -110,6 +103,20 @@ exports.handlePOSTSignUp = async (req, res, next) => {
         if (email.substring(7) !== '@ugrad.cse.buet.ac.bd')
             return res.status(400).send(new ErrorHandler(400,
                 "Please Sign Up using departmental email."));
+
+        let newUserID;
+        try{
+            newUserID = parseInt(email.substring(0, 7))
+        }catch (e) {
+            return res.status(400).send(new ErrorHandler(400,
+                "Please Sign Up using departmental email."));
+        }
+
+        const newUser = await User.findById(newUserID);
+
+        if(newUser)
+            return res.status(400).send(new ErrorHandler(400,
+                `Student ID ${newUserID} has already an account.`));
 
         res.locals.middlewareResponse = {
             email,

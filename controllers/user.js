@@ -3,6 +3,8 @@ const User = require('../models/user');
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
+const storage = require('../storage/storage');
+
 
 exports.viewProfile = async (req, res, next) => {
     try {
@@ -46,3 +48,32 @@ exports.deleteProfile = async (req, res, next) => {
         next(e);
     }
 };
+
+exports.changeProfile = async (req, res, next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        // await user.deleteMe();
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "NOt implemented", null));
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.uploadProfilePic = async (req, res, next) => {
+    try {
+        if(!req.file)
+            return res.status(400).send(new ErrorHandler(400, "No file received"));
+
+        const imageLink = await storage.uploadAnImage(req.file, "profile-pic");
+
+        let user = res.locals.middlewareResponse.user;
+        await user.saveProfilePicLink(imageLink);
+        //console.log("send")
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Edit successful", null));
+    } catch (e) {
+        next(e);
+    }
+};
+

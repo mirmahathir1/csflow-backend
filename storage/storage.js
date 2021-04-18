@@ -1,23 +1,26 @@
-const express = require('express')
-const router = new express.Router()
-const multer = require('multer')
-const {Storage} = require('@google-cloud/storage')
-const path = require('path')
+const express = require('express');
+const router = new express.Router();
+const multer = require('multer');
+const {Storage} = require('@google-cloud/storage');
+const path = require('path');
+const fs = require('fs');
 
-const MAX_IMAGE_SIZE = 10 * 1024 * 1024
-const MAX_IMAGE_COUNT = 10
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+const MAX_IMAGE_COUNT = 10;
+
+const baseURL = "https://storage.googleapis.com/csflow-buet.appspot.com/";
 
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"]
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
-    if(!allowedTypes.includes(file.mimetype)){
-        const error = new Error("Only jpeg, jpg and png images are allowed.")
-        error.code = "INCORRECT_FILETYPE"
+    if (!allowedTypes.includes(file.mimetype)) {
+        const error = new Error("Only jpeg, jpg and png images are allowed.");
+        error.code = "INCORRECT_FILETYPE";
 
-        return cb(error, false)
+        return cb(error, false);
     }
 
-    return cb(null, true)
+    return cb(null, true);
 }
 
 const upload = multer({
@@ -26,69 +29,49 @@ const upload = multer({
     limits: {
         fileSize: MAX_IMAGE_SIZE
     }
-})
-
-const storage = new Storage({
-    keyFilename: path.join(__dirname, "../../Ajraar-shop-c838fbef2c87.json"),
-    projectId: 'ajraar-shop'
 });
 
-const bucketName = 'ajraar-shop.appspot.com';
+let credentials = fs.readFileSync(path.join(__dirname, "..", "config", "15343789742.json"));
+credentials = JSON.parse(credentials);
+credentials = credentials.web;
+
+const storage = new Storage({
+    credentials,
+    projectId: 'csflow-buet'
+});
+
+const bucketName = 'csflow-buet.appspot.com';
 const bucket = storage.bucket(bucketName);
 
-const baseURL = "https://storage.googleapis.com/ajraar-shop.appspot.com/"
-
-router.post('/dashboard/image', upload.single('image'), async (req, res) => {
-    try {
-        let image = await uploadAnImage(req.file, "photos")
-        //console.log("send")
-        res.send(image)
-    }catch (e) {
-        res.status(400).send("Can not upload image")
-    }
-})
-
-router.post('/user/image', upload.single('image'), async (req, res) => {
-    try {
-        let image = await uploadAnImage(req.file, "user/profilePic")
-        //console.log("send")
-        res.send(image)
-    }catch (e) {
-        res.status(400).send("Can not upload image")
-    }
-})
-
-router.post('/dashboard/images', upload.array('images', MAX_IMAGE_COUNT), async (req, res) => {
-    try {
-        let images = []
-        for (let i=0; i<req.files.length; i++){
-            let image = await uploadAnImage(req.files[i], "products")
-            images.push(image)
-        }
-        res.send(images)
-    }catch (e) {
-        res.status(400).send("Can not upload images")
-    }
-})
-
 const uploadAnImage = async (image, dirName) => {
-    const name = getRandomName(image.originalname)
-    const cloudStorageFileName = dirName + "/"  + name
-    const file = bucket.file(cloudStorageFileName);
+    console.log("enter");
+    const name = getRandomName(image.originalname);
+    const cloudStorageFileName = dirName + "/" + name;
+    console.log(cloudStorageFileName);
 
     try {
-        await file.createWriteStream({resemble: false}).end(image.buffer)
-        //console.log("done")
-        return {
-            name,
-            link: baseURL + cloudStorageFileName,
-        }
-        //return cloudStorageFileName
-    }catch(e) {
-        throw new Error("Can not upload")
+        const file = bucket.file(cloudStorageFileName);
+
+        // fs.createReadStream('/home/ashraful/Desktop/img.jpeg')
+        //     .pipe(file.createWriteStream())
+        //     .on('error', function (err) {
+        //         console.log(err)
+        //     })
+        //     .on('finish', function () {
+        //         console.log("done")
+        //         // The file upload is complete.
+        //     });
+
+        await file.createWriteStream({
+            resemble: false
+        }).end(image.buffer);
+
+        return baseURL + cloudStorageFileName;
+    } catch (e) {
+        console.log(e)
+        throw new Error("Can not upload");
     }
 }
-
 
 const getRandomName = (name) => {
     return new Date().getTime().toString() +
@@ -96,26 +79,7 @@ const getRandomName = (name) => {
         "." + name.split('.').pop()
 }
 
-module.exports = router
-
-
-// Do not delete
-// const name = getRandomName(req.file.originalname)
-// const cloudStorageFileName = "photo/"  + name
-// const file = bucket.file(cloudStorageFileName);
-//
-// file.createWriteStream({resemble: false})
-//     .on('error', function(err) {
-//         console.log(err)
-//         res.status(400).send("Error")
-//     })
-//     .on('finish', function(result) {
-//         //console.log("Done")
-//         //console.log("DownLoad Link",  baseURL + cloudStorageFileName)
-//
-//         res.send({
-//             name,
-//             link: baseURL + cloudStorageFileName,
-//         })
-//
-//     }).end(req.file.buffer)
+module.exports = {
+    upload,
+    uploadAnImage
+}

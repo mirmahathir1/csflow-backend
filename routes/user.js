@@ -1,7 +1,8 @@
 const express = require('express');
 
 const userController = require('../controllers/user');
-const userValidators = require('../validations/user')
+const userValidators = require('../validations/user');
+const storage = require('../storage/storage');
 
 const router = express.Router();
 
@@ -25,8 +26,13 @@ router.delete('',
 
 // router.patch('',
 //     authenticate.handleAuthentication,
-//     userController.deleteProfile,
+//     userController.changeProfile,
 // );
 
+// router.patch('/profilePic',
+//     authenticate.handleAuthentication,
+//     storage.upload.single('image'),
+//     userController.uploadProfilePic,
+// );
 
 module.exports = router;
