@@ -75,6 +75,7 @@ exports.uploadProfilePic = async (req, res, next) => {
 
         let user = res.locals.middlewareResponse.user;
         await user.saveProfilePicLink(imageLink);
+
         await deleteImage(user.profilePic);
         //console.log("send")
         return res.status(200).send(new SuccessResponse("OK", 200,

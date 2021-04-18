@@ -16,7 +16,8 @@ exports.handlePOSTLogIn = async (req, res, next) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).send(new ErrorHandler(400, "Missing fields in request body"));
+            return res.status(400).send(new ErrorHandler(400,
+                "Missing fields in request body"));
         }
 
         let email = req.body.email;
@@ -43,7 +44,8 @@ exports.handlePOSTLogIn = async (req, res, next) => {
 
 exports.handleAuthentication = async (req, res, next) => {
     if (!req.header('Authorization')) {
-        return res.status(401).send(new ErrorHandler(401, 'Authentication header not found'));
+        return res.status(401).send(new ErrorHandler(401,
+            'Authentication header not found'));
     }
 
     let token;
@@ -75,7 +77,8 @@ exports.handlePOSTSignUp = async (req, res, next) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).send(new ErrorHandler(400, "Missing/ miswritten fields in request"));
+            return res.status(400).send(new ErrorHandler(400,
+                "Missing/ miswritten fields in request"));
         }
 
         let email = req.body.email;
@@ -134,7 +137,8 @@ exports.handlePATCHSignUpComplete = async (req, res, next) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty())
-            return res.status(400).send(new ErrorHandler(400, "Missing/ miswritten fields in request"));
+            return res.status(400).send(new ErrorHandler(400,
+                "Missing/ miswritten fields in request"));
 
         const token = req.body.token;
         const response = await jwt.verify(token, process.env.BCRYPT_SALT);

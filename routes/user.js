@@ -30,10 +30,10 @@ router.patch('',
     userController.updateName,
 );
 
-// router.patch('/profilePic',
-//     authenticate.handleAuthentication,
-//     upload.single('image'),
-//     userController.uploadProfilePic,
-// );
+router.patch('/profilePic',
+    authenticate.handleAuthentication,
+    upload.single('image'),
+    userController.uploadProfilePic,
+);
 
 module.exports = router;

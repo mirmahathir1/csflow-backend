@@ -15,7 +15,7 @@ const handleError = (err, res) => {
         statusCode,
         status: "ERROR",
         message,
-        payload
+        payload: null
     });
 };
 
