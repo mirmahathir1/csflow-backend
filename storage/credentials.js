@@ -11,6 +11,7 @@ exports.credentials = {
     client_x509_cert_url: process.env.STORAGE_CLIENT_X509_CERT_URL,
 };
 
+console.log(exports.credentials)
 
 // console.log(credentials)
 // let credentails = fs.readFileSync(path.join(__dirname, "..", "config", "csflow-buet-117f9b557ef8.json"));
