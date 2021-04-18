@@ -18,6 +18,15 @@ router.get('/:userId',
     userController.viewProfile
 );
 
+router.delete('',
+    authenticate.handleAuthentication,
+    userController.deleteProfile,
+);
+
+// router.patch('',
+//     authenticate.handleAuthentication,
+//     userController.deleteProfile,
+// );
 
 
 module.exports = router;

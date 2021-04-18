@@ -35,3 +35,14 @@ exports.viewMyProfile = async (req, res, next) => {
         next(e);
     }
 };
+
+exports.deleteProfile = async (req, res, next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        await user.deleteMe();
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Account deletion successful", null));
+    } catch (e) {
+        next(e);
+    }
+};

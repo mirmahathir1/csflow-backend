@@ -80,6 +80,12 @@ module.exports = class User {
                            WHERE id = ${this.id}`)
     }
 
+    deleteMe() {
+        return db.execute(`DELETE
+                           FROM user
+                           WHERE id = ${this.id}`);
+    }
+
     static async isUser(id) {
         let row = await db.execute(`SELECT ID
                                     FROM user
