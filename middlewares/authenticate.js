@@ -96,9 +96,12 @@ exports.handlePOSTSignUp = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Associated email address already has an account"));
 
-        if (!Number.isInteger(email.substring(0, 7)))
+        try{
+            parseInt(email.substring(0, 7))
+        }catch (e) {
             return res.status(400).send(new ErrorHandler(400,
                 "Please Sign Up using departmental email."));
+        }
 
         if (email.substring(2, 4) !== '05')
             return res.status(400).send(new ErrorHandler(400,
