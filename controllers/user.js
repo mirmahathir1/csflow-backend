@@ -3,7 +3,8 @@ const User = require('../models/user');
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
-const storage = require('../storage/storage');
+const {uploadAnImage} = require('../storage/storage');
+const {deleteImage} = require('../storage/cleanup');
 
 
 exports.viewProfile = async (req, res, next) => {
@@ -70,13 +71,14 @@ exports.uploadProfilePic = async (req, res, next) => {
         if(!req.file)
             return res.status(400).send(new ErrorHandler(400, "No file received"));
 
-        const imageLink = await storage.uploadAnImage(req.file, "profile-pic");
+        const imageLink = await uploadAnImage(req.file, "profile-pic");
 
         let user = res.locals.middlewareResponse.user;
         await user.saveProfilePicLink(imageLink);
+        await deleteImage(user.profilePic);
         //console.log("send")
         return res.status(200).send(new SuccessResponse("OK", 200,
-            "Edit successful", null));
+            `Uploaded mage successfully. New Image link ${imageLink}`, null));
     } catch (e) {
         next(e);
     }

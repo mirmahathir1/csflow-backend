@@ -2,7 +2,7 @@ const express = require('express');
 
 const userController = require('../controllers/user');
 const userValidators = require('../validations/user');
-const storage = require('../storage/storage');
+const {upload} = require('../storage/storage');
 
 const router = express.Router();
 
@@ -30,10 +30,10 @@ router.patch('',
     userController.updateName,
 );
 
-router.patch('/profilePic',
-    authenticate.handleAuthentication,
-    storage.upload.single('image'),
-    userController.uploadProfilePic,
-);
+// router.patch('/profilePic',
+//     authenticate.handleAuthentication,
+//     upload.single('image'),
+//     userController.uploadProfilePic,
+// );
 
 module.exports = router;
