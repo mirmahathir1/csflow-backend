@@ -96,6 +96,18 @@ exports.handlePOSTSignUp = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Associated email address already has an account"));
 
+        if (!Number.isInteger(email.substring(0, 7)))
+            return res.status(400).send(new ErrorHandler(400,
+                "Please Sign Up using departmental email."));
+
+        if (email.substring(2, 4) !== '05')
+            return res.status(400).send(new ErrorHandler(400,
+                "Please Sign Up using departmental email."));
+
+        if (email.substring(7) !== '@ugrad.cse.buet.ac.bd')
+            return res.status(400).send(new ErrorHandler(400,
+                "Please Sign Up using departmental email."));
+
         res.locals.middlewareResponse = {
             email,
             name,
@@ -175,7 +187,7 @@ exports.handlePATCHForgetPassword = async (req, res, next) => {
 
         const user = await User.findByEmail(email);
         // console.log(user);
-        if(!user)
+        if (!user)
             return res.status(400).send(new ErrorHandler(400,
                 "Email not found"));
 
@@ -192,7 +204,7 @@ exports.handlePATCHPasswordRecover = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Missing/ miswritten fields in request"));
 
-        if(req.body.password.length<6)
+        if (req.body.password.length < 6)
             return res.status(400).send(new ErrorHandler(400,
                 "Password must have a minimum length of 6 characters."));
 
