@@ -23,7 +23,5 @@
     "node-datetime": "^2.1.2",
     "nodemailer": "^6.5.0"
   },
-  "devDependencies": {
-
-  }
+  "devDependencies": {}
 }

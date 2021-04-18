@@ -188,6 +188,13 @@ exports.postThesis = async (req, res, next) => {
                 }
             }
         }
+        let regEx = new RegExp("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)");
+        //let regEx = new RegExp("((http|https)(:\\/\\/))?([a-zA-Z0-9]+[.]{1}){2}[a-zA-z0-9]+(\\/{1}[a-zA-Z0-9]+)*\\/?", "i");
+        if(!link.match(regEx)){
+            //console.log("not OK");
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+
+        }
 
         let row = await Thesisarchive.getMaxID();
 
@@ -289,6 +296,15 @@ exports.editThesis = async (req, res, next) => {
                 }
             }
         }
+
+        let regEx = new RegExp("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)");
+
+        if(!link.match(regEx)){
+            //console.log("not OK");
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+
+        }
+
         await Thesisarchive.update(req.params.id, batchid, title, writers, description, link);
 
 
@@ -404,6 +420,15 @@ exports.postProject = async (req, res, next) => {
                 throw new ErrorHandler(404, "Student ID not found", null);
             }
         }
+
+        let regEx = new RegExp("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)");
+
+        if(!(codeLink.match(regEx)) || !(videoLink.match(regEx))){
+            //console.log("not OK");
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+
+        }
+
         let row = await Projectarchive.getMaxID();
 
         let count = Object.values(row);
@@ -477,6 +502,14 @@ exports.editProject = async (req, res, next) => {
                     throw new ErrorHandler(400,"Duplicate owners found",null);
                 }
             }
+        }
+
+        let regEx = new RegExp("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)");
+
+        if(!(codeLink.match(regEx)) || !(videoLink.match(regEx))){
+            //console.log("not OK");
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+
         }
 
         await Projectarchive.update(req.params.id,courseID[0].ID,batchid,title,description,videoLink,codeLink);
