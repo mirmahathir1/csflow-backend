@@ -109,16 +109,16 @@ exports.handlePOSTSignUp = async (req, res, next) => {
                 "Please Sign Up using departmental email."));
 
         let newUserID;
-        try{
+        try {
             newUserID = parseInt(email.substring(0, 7))
-        }catch (e) {
+        } catch (e) {
             return res.status(400).send(new ErrorHandler(400,
                 "Please Sign Up using departmental email."));
         }
 
         const newUser = await User.findById(newUserID);
 
-        if(newUser)
+        if (newUser)
             return res.status(400).send(new ErrorHandler(400,
                 `Student ID ${newUserID} has already an account.`));
 
@@ -224,7 +224,13 @@ exports.handlePATCHPasswordRecover = async (req, res, next) => {
                 "Password must have a minimum length of 6 characters."));
 
         const token = req.body.token;
-        const response = await jwt.verify(token, process.env.BCRYPT_SALT);
+
+        let response;
+        try {
+            response = await jwt.verify(token, process.env.BCRYPT_SALT);
+        } catch (e) {
+            return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
+        }
 
         if (response.exp == null || response.email == null || response.random == null)
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
