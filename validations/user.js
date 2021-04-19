@@ -1,6 +1,6 @@
 const {body,param,header} = require('express-validator/check');
 
-const {isFieldExist} = require('./common');
+const {isFieldExist, matchStringType} = require('./common');
 
 exports.validateDetails = () => {
     return [
@@ -13,5 +13,6 @@ exports.validateDetails = () => {
 exports.validateUpdateName = () => {
     return [
         isFieldExist('name'),
+        matchStringType('name'),
     ]
 }

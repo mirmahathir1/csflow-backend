@@ -10,3 +10,11 @@ exports.validateEmail = () => {
         body('email', 'Provided email is invalid').isEmail(),
     ];
 };
+
+exports.matchNumericType = (filedName) => {
+    return body(filedName, `${filedName} must be numeric`).isNumeric();
+}
+
+exports.matchStringType = (filedName) => {
+    return body(filedName, `${filedName} must be text`).isString();
+}
