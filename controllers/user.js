@@ -33,7 +33,8 @@ exports.viewMyProfile = async (req, res, next) => {
         // deleting password field
         delete user.password;
         //console.log(user.batchID);
-        return res.status(200).send(new SuccessResponse("OK", 200, "Fetched user successfully", user));
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Fetched user successfully", user));
     } catch (e) {
         next(e);
     }

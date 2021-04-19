@@ -2,6 +2,8 @@ const multer = require('multer');
 const {Storage} = require('@google-cloud/storage');
 
 const {credentials} = require('./credentials');
+const {ErrorHandler} = require('../response/error');
+
 
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 const MAX_IMAGE_COUNT = 10;
@@ -12,10 +14,11 @@ const fileFilter = (req, file, cb) => {
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
     if (!allowedTypes.includes(file.mimetype)) {
-        const error = new Error("Only jpeg, jpg and png images are allowed.");
-        error.code = "INCORRECT_FILETYPE";
-
-        return cb(error, false);
+        // const error = new Error();
+        // error.code = "INCORRECT_FILETYPE";
+        //
+        return cb(new ErrorHandler(400,
+            "Only jpeg, jpg and png images are allowed."), false);
     }
 
     return cb(null, true);
