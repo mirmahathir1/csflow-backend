@@ -40,6 +40,7 @@ const getPasswordRecoverOptions = (mail, token) => {
     const text = 'Use the following link to recover your password.\n' +
         `https://csflow-buet.web.app/#/auth/password/recover?token=${token}\n` +
         'Note: This link is valid for 1 hour only.';
+    //console.log("reached 4"+mail+"   "+token);
     return getMailOptions(mail, text);
 };
 
@@ -146,8 +147,12 @@ exports.forgetPassword = async (req, res, next) => {
             random: Math.floor(Math.random()*1000000)
         }, process.env.BCRYPT_SALT);
 
+
+
         await ForgetPassword.saveToken(email, token);
+
         await transporter.sendMail(getPasswordRecoverOptions(email, token));
+
 
         return res.status(200).send(new SuccessResponse(200, "OK",
             "An email has been sent for password recovery.", null));

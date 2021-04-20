@@ -125,6 +125,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
         }
 
         let Details = {
+            batch: firstThesis.BatchID,
             title: firstThesis.Title,
             link: firstThesis.Link,
             writers: array,
@@ -590,6 +591,7 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
         }
 
         let Details = {
+            batch: firstProject.BatchID,
             title: firstProject.Title,
             description: firstProject.Description,
             github: firstProject.CodeLink,
