@@ -307,7 +307,11 @@ exports.editThesis = async (req, res, next) => {
         }
 
         await Thesisarchive.update(req.params.id, batchid, title, writers, description, link);
-
+        await ThesisOwner.DeleteThesisOwner(req.params.id);
+        let q;
+        for(q=0;q<owners.length;q++){
+            await ThesisOwner.create(req.params.id,owners[q]);
+        }
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Thesis edited Successfully", null));
     } catch (e) {
@@ -515,9 +519,11 @@ exports.editProject = async (req, res, next) => {
 
         await Projectarchive.update(req.params.id,courseID[0].ID,batchid,title,description,videoLink,codeLink);
 
-        /*for (k = 0; k < owners.length; k++) {
-            await Projectowner.create(id, owners[k]);
-        }*/
+        await Projectowner.DeleteProjectOwner(req.params.id);
+        let q;
+        for(q=0;q<owners.length;q++){
+            await Projectowner.create(req.params.id,owners[q]);
+        }
 
         return res.status(201).send(new SuccessResponse("OK", 201, "Project edited Successfully", null));
     } catch (e) {

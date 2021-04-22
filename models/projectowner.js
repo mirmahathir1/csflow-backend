@@ -5,4 +5,8 @@ module.exports = class Projectowner {
             VALUES(${projectID},${userID});`);
     }
 
+    static async DeleteProjectOwner(id){
+        await db.execute(`DELETE FROM projectowner WHERE ProjectID=${id}`);
+    }
+
 };
