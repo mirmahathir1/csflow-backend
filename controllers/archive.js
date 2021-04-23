@@ -595,10 +595,12 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
                 timestamp: singleComment.Date
             });
         }
-
+        let CourseTitle = await Coursedetails.findCourseTitle(firstProject.CourseID);
         let Details = {
             batch: firstProject.BatchID,
-            title: firstProject.Title,
+            course_no: CourseTitle[0].CourseNo,
+            course_title:CourseTitle[0].Title,
+            project_title: firstProject.Title,
             description: firstProject.Description,
             github: firstProject.CodeLink,
             youtube:firstProject.VideoLink,

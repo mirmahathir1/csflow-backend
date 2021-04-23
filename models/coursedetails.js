@@ -13,4 +13,11 @@ module.exports = class Coursedetails {
             WHERE CourseNo LIKE '${courseNumber}';`);
         return result[0];
     }
+    static async findCourseTitle(courseID) {
+        let result = await db.execute(`SELECT c.CourseNo, c.Title
+                                       FROM coursedetail c
+                                           WHERE c.ID=${courseID};`);
+
+        return result[0];
+    }
 };
