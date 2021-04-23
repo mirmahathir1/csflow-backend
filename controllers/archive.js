@@ -600,7 +600,7 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
             batch: firstProject.BatchID,
             course_no: CourseTitle[0].CourseNo,
             course_title:CourseTitle[0].Title,
-            project_title: firstProject.Title,
+            title: firstProject.Title,
             description: firstProject.Description,
             github: firstProject.CodeLink,
             youtube:firstProject.VideoLink,
