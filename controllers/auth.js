@@ -80,6 +80,21 @@ exports.autoLogIn = async (req, res, next) => {
     }
 };
 
+const deleteAllTempAccount = async (TempUser) => {
+    const result = await TempUser.getAllTempUser();
+    for (let i = 0; i < result[0].length; i++) {
+        const row = result[0][i];
+        try {
+            const res = await jwt.verify(row.Token, process.env.BCRYPT_SALT);
+            const expireDate = new Date(res.exp * 1000);
+            if (expireDate < (new Date()))
+                await TempUser.deleteTempAccountByEmail(row.Email);
+        } catch (e) {
+            await TempUser.deleteTempAccountByEmail(row.Email);
+        }
+    }
+}
+
 exports.authSignUp = async (req, res, next) => {
     try {
         const email = res.locals.middlewareResponse.email;
@@ -92,6 +107,8 @@ exports.authSignUp = async (req, res, next) => {
             random: Math.floor(Math.random()*1000000)
         }, process.env.BCRYPT_SALT);
 
+        await deleteAllTempAccount(TempUser);
+        await TempUser.deleteTempAccountByEmail(email);
         await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
         await transporter.sendMail(getSignUpOptions(email, token));
 
