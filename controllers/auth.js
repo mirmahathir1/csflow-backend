@@ -15,8 +15,8 @@ const getEncryptedPassword = async (password) => {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'restapimailtest@gmail.com',
-        pass: 'nodespringresttest'
+        user: process.env.MAIL_ID,
+        pass: process.env.MAIL_PASSWORD,
     }
 });
 
