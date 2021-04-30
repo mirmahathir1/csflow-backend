@@ -147,6 +147,8 @@ exports.handlePATCHSignUpComplete = async (req, res, next) => {
         if (response.exp == null || response.email == null || response.random == null)
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
 
+        if (response.exp)
+
         const tempUser = await TempUser.getTempUserByToken(token);
         if (!tempUser || tempUser.email !== res.email)
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));

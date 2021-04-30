@@ -93,6 +93,72 @@ module.exports = class User {
                            WHERE id = ${this.id}`)
     }
 
+    async getUpVoteCount() {
+        const resultRow = await db.execute(`SELECT COUNT(*) AS c
+                                      FROM vote
+                                      WHERE userid = ${this.id}
+                                        AND type = 1`);
+        if (resultRow[0].length === 0)
+            return 0;
+        // console.log(resultRow[0][0])
+        return resultRow[0][0]['c'];
+    }
+
+    async getDownVoteCount() {
+        const resultRow = await db.execute(`SELECT COUNT(*) AS c
+                                            FROM vote
+                                            WHERE userid = ${this.id}
+                                              AND type = 0`);
+        if (resultRow[0].length === 0)
+            return 0;
+        return resultRow[0][0]['c'];
+    }
+
+    async getTotalDiscussionCount() {
+        const resultRow = await db.execute(`SELECT COUNT(*) AS c
+                                            FROM post
+                                            WHERE userid = ${this.id}
+                                              AND type like 'Discussion'`);
+        if (resultRow[0].length === 0)
+            return 0;
+        return resultRow[0][0]['c'];
+    }
+
+    async getTotalAnswerCount() {
+        const resultRow = await db.execute(`SELECT COUNT(*) AS c
+                                            FROM answer
+                                            WHERE userid = ${this.id}`);
+        if (resultRow[0].length === 0)
+            return 0;
+        return resultRow[0][0]['c'];
+    }
+
+    async getTotalQuestionCount() {
+        const resultRow = await db.execute(`SELECT COUNT(*) AS c
+                                            FROM post
+                                            WHERE userid = ${this.id}
+                                              AND type like 'Question'`);
+        if (resultRow[0].length === 0)
+            return 0;
+        return resultRow[0][0]['c'];
+    }
+
+    async getUserStatistics() {
+        const upvoteCount = await this.getUpVoteCount();
+        const downvoteCount = await this.getDownVoteCount();
+        const totalDiscussion = await this.getTotalDiscussionCount();
+        const totalQuestion = await this.getTotalQuestionCount();
+        const totalAnswer = await this.getTotalAnswerCount();
+
+        return {
+            upvoteCount,
+            downvoteCount,
+            totalDiscussion,
+            totalQuestion,
+            totalAnswer,
+        }
+    }
+
     static async isUser(id) {
         let row = await db.execute(`SELECT ID
                                     FROM user

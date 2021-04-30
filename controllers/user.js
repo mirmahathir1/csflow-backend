@@ -10,14 +10,18 @@ const {deleteImage} = require('../storage/cleanup');
 exports.viewProfile = async (req, res, next) => {
     try {
         const errors = validationResult(req);
-        if (!errors.isEmpty()) {
+        if (!errors.isEmpty())
             throw new ErrorHandler(400, errors);
-        }
 
         let user = await User.findById(req.params.userId);
-
         if (!user)
             throw new ErrorHandler(404, "User not found");
+
+        const statistics = await user.getUserStatistics();
+        user = {
+            ...user,
+            ...statistics,
+        };
         // deleting password field
         delete user.password;
         //console.log(user);
@@ -30,6 +34,15 @@ exports.viewProfile = async (req, res, next) => {
 exports.viewMyProfile = async (req, res, next) => {
     try {
         let user = res.locals.middlewareResponse.user;
+        if (!user)
+            throw new ErrorHandler(404, "User not found");
+
+        const statistics = await user.getUserStatistics();
+        user = {
+            ...user,
+            ...statistics,
+        };
+
         // deleting password field
         delete user.password;
         //console.log(user.batchID);
