@@ -43,7 +43,7 @@ where c.ThesisID=${id};`);
         return result[0];
     }
     static async findDetailsByThesisID(id){
-        let result = await db.execute(`SELECT o.UserID,t.Title,t.Authors,t.Abstract,t.Link FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.id = ${id};`)
+        let result = await db.execute(`SELECT o.UserID,t.BatchID,t.Title,t.Authors,t.Abstract,t.Link FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.id = ${id};`)
         return result[0];
     }
     static async getThesisTitleByBatchID(batchID){

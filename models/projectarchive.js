@@ -72,7 +72,7 @@ module.exports = class Projectarchive {
     }
 
     static async findDetailsByProjectID(id) {
-        let result = await db.execute(`SELECT o.UserID, t.Title, t.Description, t.VideoLink, t.CodeLink
+        let result = await db.execute(`SELECT o.UserID,t.BatchID,t.CourseID, t.Title, t.Description, t.VideoLink, t.CodeLink
                                        FROM projectarchive t
                                                 JOIN projectowner o ON t.ID = o.ProjectID
                                        WHERE t.id = ${id};`)

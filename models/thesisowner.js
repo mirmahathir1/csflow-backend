@@ -5,4 +5,8 @@ module.exports = class Thesisowner {
             VALUES(${thesisID},${userID})`);
     }
 
+    static async DeleteThesisOwner(id){
+        await db.execute(`DELETE FROM thesisowner WHERE ThesisID=${id}`);
+    }
+
 };
