@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const dateTime = require('node-datetime');
 
 const db = require('../db');
 
@@ -173,20 +172,7 @@ module.exports = class User {
         return result[0][0];
     }
 
-    static async addUser(tempUser) {
-        const dt = dateTime.create();
-        const formatted = dt.format('Y-m-d H:M:S');
-        // console.log(formatted);
-
-        const user = {
-            id: tempUser.Email.substring(0, 7),
-            batchID: tempUser.Email.substring(0, 2),
-            name: tempUser.Name,
-            email: tempUser.Email,
-            password: tempUser.Password,
-            joiningDate: formatted,
-        };
-
+    static async addUser(user) {
         return db.execute(`INSERT INTO user(id, batchID, name,
                                             email, password, joiningDate)
                            VALUES (${user.id}, ${user.batchID},

@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
+const dateTime = require('node-datetime');
+
 
 const {SuccessResponse} = require('../response/success');
 const TempUser = require('../models/tempuser');
@@ -127,7 +129,19 @@ exports.authSignUpComplete = async (req, res, next) => {
         // console.log("deleting temp user");
         await TempUser.deleteTempAccountByEmail(tempUser.Email);
         // console.log("adding in user table")
-        await User.addUser(tempUser);
+        const dt = dateTime.create();
+        const formatted = dt.format('Y-m-d H:M:S');
+        // console.log(formatted);
+        const user = {
+            id: tempUser.Email.substring(0, 7),
+            batchID: tempUser.Email.substring(0, 2),
+            name: tempUser.Name,
+            email: tempUser.Email,
+            password: tempUser.Password,
+            joiningDate: formatted,
+        };
+
+        await User.addUser(user);
         // console.log("Done")
 
         return res.status(200).send(new SuccessResponse(200, "OK",
@@ -154,6 +168,21 @@ exports.changePassword = async (req, res, next) => {
     }
 };
 
+const deleteAllTimeExceed = async (ForgetPassword) => {
+    const result = await ForgetPassword.getAllAccount();
+    for (let i = 0; i < result[0].length; i++) {
+        const row = result[0][i];
+        try {
+            const res = await jwt.verify(row.Token, process.env.BCRYPT_SALT);
+            const expireDate = new Date(res.exp * 1000);
+            if (expireDate < (new Date()))
+                await ForgetPassword.deleteByEmail(row.Email);
+        } catch (e) {
+            await ForgetPassword.deleteByEmail(row.Email);
+        }
+    }
+}
+
 exports.forgetPassword = async (req, res, next) => {
     try {
         const email = req.body.email;
@@ -164,12 +193,12 @@ exports.forgetPassword = async (req, res, next) => {
             random: Math.floor(Math.random()*1000000)
         }, process.env.BCRYPT_SALT);
 
-
+        await deleteAllTimeExceed(ForgetPassword);
+        await ForgetPassword.deleteByEmail(email);
 
         await ForgetPassword.saveToken(email, token);
 
         await transporter.sendMail(getPasswordRecoverOptions(email, token));
-
 
         return res.status(200).send(new SuccessResponse(200, "OK",
             "An email has been sent for password recovery.", null));
