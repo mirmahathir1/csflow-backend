@@ -172,7 +172,7 @@ exports.handlePATCHSignUpComplete = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Verification link expired. You must verify your email within one hour."));
         else
-            return res.status(500).send(new ErrorHandler(500, e.message));
+            return res.status(400).send(new ErrorHandler(400, e.message));
     }
 };
 
