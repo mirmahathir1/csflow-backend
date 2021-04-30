@@ -147,7 +147,10 @@ exports.handlePATCHSignUpComplete = async (req, res, next) => {
         if (response.exp == null || response.email == null || response.random == null)
             return res.status(400).send(new ErrorHandler(400, "Invalid Token."));
 
-        if (response.exp)
+        const expireDate = new Date(response.exp * 1000);
+        if (expireDate < (new Date()))
+            return res.status(400).send(new ErrorHandler(400,
+                "Verification link expired. You must verify your email within one hour."));
 
         const tempUser = await TempUser.getTempUserByToken(token);
         if (!tempUser || tempUser.email !== res.email)
