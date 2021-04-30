@@ -7,4 +7,12 @@ const pool = mysql.createPool({
     password: process.env.MYSQL_PASSWORD
 });
 
-module.exports = pool.promise();
+const database = pool.promise();
+
+const dbLogger = {}
+dbLogger.execute = async (query)=>{
+    console.log("SQL: ",query.replace(/[ \n]+/g,' '));
+    return database.execute(query);
+}
+
+module.exports = dbLogger;
