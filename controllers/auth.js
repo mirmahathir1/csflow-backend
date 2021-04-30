@@ -80,7 +80,7 @@ exports.autoLogIn = async (req, res, next) => {
     }
 };
 
-const deleteAllTempAccount = async (TempUser) => {
+const deleteAllTimeExceedTempAccount = async (TempUser) => {
     const result = await TempUser.getAllTempUser();
     for (let i = 0; i < result[0].length; i++) {
         const row = result[0][i];
@@ -107,7 +107,7 @@ exports.authSignUp = async (req, res, next) => {
             random: Math.floor(Math.random()*1000000)
         }, process.env.BCRYPT_SALT);
 
-        await deleteAllTempAccount(TempUser);
+        await deleteAllTimeExceedTempAccount(TempUser);
         await TempUser.deleteTempAccountByEmail(email);
         await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
         await transporter.sendMail(getSignUpOptions(email, token));

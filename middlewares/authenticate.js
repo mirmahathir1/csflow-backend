@@ -90,16 +90,6 @@ exports.handlePOSTSignUp = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Password must have a minimum length of 6 characters"));
 
-        let response = await emailValidator.validate(email);
-        if (!response.valid)
-            return res.status(400).send(new ErrorHandler(400,
-                "Invalid email address"));
-
-        let user = await User.findByEmail(email);
-        if (user)
-            return res.status(400).send(new ErrorHandler(400,
-                "Associated email address already has an account"));
-
         if (email.substring(2, 4) !== '05')
             return res.status(400).send(new ErrorHandler(400,
                 "Please Sign Up using departmental email."));
@@ -110,11 +100,30 @@ exports.handlePOSTSignUp = async (req, res, next) => {
 
         let newUserID;
         try {
+            if((parseInt(email.substring(0, 2))+2000) > (new Date().getFullYear()))
+                return res.status(400).send(new ErrorHandler(400,
+                    "Invalid email address"));
+
+            const roll = parseInt(email.substring(4 ,3));
+            if(roll<=0 || roll>250)
+                return res.status(400).send(new ErrorHandler(400,
+                "Invalid email address"));
+
             newUserID = parseInt(email.substring(0, 7))
         } catch (e) {
             return res.status(400).send(new ErrorHandler(400,
                 "Please Sign Up using departmental email."));
         }
+
+        let response = await emailValidator.validate(email);
+        if (!response.valid)
+            return res.status(400).send(new ErrorHandler(400,
+                "Invalid email address"));
+
+        let user = await User.findByEmail(email);
+        if (user)
+            return res.status(400).send(new ErrorHandler(400,
+                "Associated email address already has an account"));
 
         const newUser = await User.findById(newUserID);
 
