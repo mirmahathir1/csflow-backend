@@ -26,7 +26,23 @@ app.get('/', (req, res) => {
 })
 
 app.get("*", (req, res) => {
-    res.status(404).send("Unrecognised route");
+    res.status(404).send("Route not found");
+});
+
+app.post("*", (req, res) => {
+    res.status(404).send("Route not found");
+});
+
+app.patch("*", (req, res) => {
+    res.status(404).send("Route not found");
+});
+
+app.put("*", (req, res) => {
+    res.status(404).send("Route not found");
+});
+
+app.delete("*", (req, res) => {
+    res.status(404).send("Route not found");
 });
 
 app.use((err, req, res, next) => {
