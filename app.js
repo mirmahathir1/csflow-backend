@@ -25,24 +25,31 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
+const routeNotFoundMessage  = {
+    "status":"ERROR",
+    "statusCode":400,
+    "message":"Route not found",
+    "payload":null
+};
+
 app.get("*", (req, res) => {
-    res.status(404).send("Route not found");
+    res.status(404).send(routeNotFoundMessage);
 });
 
 app.post("*", (req, res) => {
-    res.status(404).send("Route not found");
+    res.status(404).send(routeNotFoundMessage);
 });
 
 app.patch("*", (req, res) => {
-    res.status(404).send("Route not found");
+    res.status(404).send(routeNotFoundMessage);
 });
 
 app.put("*", (req, res) => {
-    res.status(404).send("Route not found");
+    res.status(404).send(routeNotFoundMessage);
 });
 
 app.delete("*", (req, res) => {
-    res.status(404).send("Route not found");
+    res.status(404).send(routeNotFoundMessage);
 });
 
 app.use((err, req, res, next) => {
