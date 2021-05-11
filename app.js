@@ -16,10 +16,12 @@ app.use(cors())
 const userRoutes = require('./routes/user');
 const authRoutes = require('./routes/auth');
 const archiveRoutes = require('./routes/archive');
+const privilegedRoutes = require('./routes/privileged');
 const {handleError} = require("./response/error");
 app.use('/user', userRoutes);
 app.use('/auth',authRoutes);
 app.use('/archive',archiveRoutes);
+app.use('/privileged',privilegedRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World!')

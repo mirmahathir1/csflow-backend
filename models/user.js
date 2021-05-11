@@ -172,7 +172,19 @@ module.exports = class User {
         return result[0][0];
     }
 
-    static async addUser(user) {
+    static async getUserDetailsByBatchID(batchid) {
+        let result = await db.execute(`SELECT Name as name, ProfilePic as image, ID as studentId, Karma as karma
+                                       FROM user
+                                       where BatchID = ${batchid}`)
+        return result[0];
+    }
+
+    static async isPrivilegedUser(userid){
+        let result = await db.execute(`SELECT IsCR as CR FROM user WHERE ID=${userid}`)
+
+        return result[0][0];
+    }
+     static async addUser(user) {
         return db.execute(`INSERT INTO user(id, batchID, name,
                                             email, password, joiningDate)
                            VALUES (${user.id}, ${user.batchID},
