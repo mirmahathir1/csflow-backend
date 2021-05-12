@@ -12,7 +12,21 @@ router.get('/user',
     authenticate.handlePrivilegedUser,
     privilegedController.getUsers
 )
-router.get('/resource',
+router.post('/tag/:id',
     authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.acceptRequestedTag
+)
+router.delete('/tag/:id',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.deleteTag
+)
+router.get('/tag',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    privilegedController.getAllTags
 );
 module.exports = router;
