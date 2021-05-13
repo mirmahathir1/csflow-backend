@@ -24,6 +24,11 @@ router.delete('/tag/:id',
     idValidator.validateDetails(),
     privilegedController.deleteTag
 )
+router.get('/tagCourse',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    privilegedController.getCourseTags
+)
 router.get('/tag',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,

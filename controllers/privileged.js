@@ -26,11 +26,29 @@ exports.getUsers = async (req, res, next) => {
         next(e);
     }
 };
+exports.getCourseTags = async (req,res,next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let payload = [];
+        let courseTagDetails = await Tag.getCourseTags(batchid);
+        if(courseTagDetails.length===0){
+            throw new ErrorHandler(404, "There is no courseTag of this batch", null);
+        }
+        let i;
+        for(i=0;i<courseTagDetails.length;i++){
+            payload.push(courseTagDetails[i].Name);
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "List of CourseTags fetched successfully", payload));
+    }catch (e) {
+        next(e);
+    }
+}
 exports.getAllTags = async (req,res,next) => {
     try{
         let user = res.locals.middlewareResponse.user;
         let batchid = user.batchID;
-        let payload = []
+        let payload = [];
         let courseTagDetails = await Tag.getCourseTags(batchid);
         if(courseTagDetails.length===0){
             throw new ErrorHandler(404, "There is no courseTag of this batch", null);
@@ -60,7 +78,7 @@ exports.getAllTags = async (req,res,next) => {
                 books : books,
                 topics : topics
             };
-            payload.push(tagObject)
+            payload.push(tagObject);
         }
         return res.status(200).send(new SuccessResponse("OK", 200, "List of Tags fetched successfully", payload));
     }catch (e) {
