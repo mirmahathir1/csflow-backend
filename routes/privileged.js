@@ -12,6 +12,11 @@ router.get('/user',
     authenticate.handlePrivilegedUser,
     privilegedController.getUsers
 )
+router.post('/tag',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    privilegedController.createTag
+)
 router.post('/tag/:id',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,

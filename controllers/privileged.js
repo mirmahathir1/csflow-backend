@@ -111,6 +111,43 @@ exports.acceptRequestedTag = async (req,res,next) =>{
         next(e);
     }
 }
+exports.createTag = async (req,res,next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let type1 = req.body.type;
+        let type = type1.toLowerCase();
+        let name = req.body.name;
+
+        if(type!=='topic' && type!=='book'){
+            throw new ErrorHandler(400, "Invalid tag type", null);
+        }
+        let courseName = req.body.courseId;
+        let course = await Coursedetails.getCourseID(courseName);
+        if(course.length===0){
+            throw new ErrorHandler(404, "Course not found", null);
+        }
+
+        let BatchID = await Coursedetails.findBatchID(course[0].CourseTagID);
+        if(BatchID.BatchID != batchid){
+            throw new ErrorHandler(401, "You must be enrolled to this course to create this tag", null);
+        }
+
+        let maxTagID = await Tag.getMaxID();
+        let count = Object.values(maxTagID);
+        let tagid = count[0] + 1;
+        await Tag.addTag(tagid,type,name);
+        await Tag.addRelatedTag(course[0].CourseTagID,tagid);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Tag created Successfully", null));
+
+    }catch (e) {
+        next(e);
+    }
+}
 exports.updateTag = async (req,res,next) => {
     try {
         const errors = validationResult(req);
