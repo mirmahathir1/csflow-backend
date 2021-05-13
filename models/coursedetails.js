@@ -25,4 +25,9 @@ module.exports = class Coursedetails {
                     where CourseTagID=${tagID}`);
         return result[0][0];
     }
+    static async findCourseNumber(tagID){
+        let result = await db.execute(`SELECT CourseNo from coursedetail
+                    where CourseTagID=${tagID}`);
+        return result[0][0];
+    }
 };

@@ -38,6 +38,21 @@ module.exports = class Tag{
         await db.execute(`update predefinedtag set Type='${type}',NAME ='${name}'
                         where ID=${id}`);
      }
+     static async findRequestedTags(){
+        let response = await db.execute(`select ID,RequesterID,CourseTagID,Type,Name from requestedtag`);
+        return response[0];
+     }
+    static async findRequestedTagbyID(tagid){
+        let response = await db.execute(`select ID from requestedtag where ID=${tagid}`);
+        return response[0];
+    }
+     static async deleteRequestedTag(id){
+        await db.execute(`delete from requestedtag where ID=${id}`);
+     }
+    static async updateRequestedTag(id,type,name){
+        await db.execute(`update requestedtag set Type='${type}',NAME ='${name}'
+                        where ID=${id}`);
+    }
     static async getMaxID(){
         let result = await db.execute(`SELECT MAX(ID) FROM predefinedtag;`);
         return result[0][0];

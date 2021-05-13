@@ -210,3 +210,74 @@ exports.deleteTag = async (req,res,next) =>{
     }
 
 }
+exports.getRequestedTags = async (req,res,next) => {
+    try {
+        let requestedTagDetails = await Tag.findRequestedTags();
+        if(requestedTagDetails.length===0){
+            throw new ErrorHandler(404, "Requested tags not found", null);
+        }
+        let payload = [];
+        let i;
+        for(i=0;i<requestedTagDetails.length;i++){
+            let courseNumber = await Coursedetails.findCourseNumber(requestedTagDetails[i].CourseTagID);
+            payload.push({
+                id : requestedTagDetails[i].ID,
+                name : requestedTagDetails[i].Name,
+                type : requestedTagDetails[i].Type,
+                courseId : courseNumber.CourseNo,
+                requester : requestedTagDetails[i].RequesterID
+            });
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "Requested tags fetched Successfully", payload));
+
+    }catch (e) {
+        next(e);
+    }
+}
+exports.updateRequestedTag = async (req,res,next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
+
+        let type1 = req.body.type;
+        let type = type1.toLowerCase();
+        let name = req.body.name;
+        let tag = await Tag.findRequestedTagbyID(req.params.id);
+        if(tag.length===0){
+            throw new ErrorHandler(404, "Tag not found", null);
+        }
+        if(type!=='topic' && type!=='book' && type!=='course'){
+            throw new ErrorHandler(400, "Invalid tag type", null);
+        }
+
+        let courseName = req.body.courseId;
+        let course = await Coursedetails.getCourseID(courseName);
+        if(course.length===0){
+            throw new ErrorHandler(404, "Course not found", null);
+        }
+        await Tag.updateRequestedTag(req.params.id,type,name);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Tag edited Successfully", null));
+
+    }catch (e){
+        next(e);
+    }
+}
+exports.deleteRequestedTag = async (req,res,next) => {
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
+
+        let tag = await Tag.findRequestedTagbyID(req.params.id);
+        if(tag.length===0){
+            throw new ErrorHandler(404, "Tag not found", null);
+        }
+        await Tag.deleteRequestedTag(req.params.id);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Tag deleted Successfully", null));
+    }catch (e){
+        next(e);
+    }
+}
