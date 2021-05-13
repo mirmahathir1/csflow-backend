@@ -18,6 +18,12 @@ router.post('/tag/:id',
     idValidator.validateDetails(),
     privilegedController.acceptRequestedTag
 )
+router.patch('/tag/:id',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.updateTag
+)
 router.delete('/tag/:id',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,

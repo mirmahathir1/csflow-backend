@@ -34,6 +34,10 @@ module.exports = class Tag{
          let response = await db.execute(`select CourseTagID from relatedtag where TagID=${tagid}`);
          return response[0];
      }
+     static async updateTags(id,type,name){
+        await db.execute(`update predefinedtag set Type='${type}',NAME ='${name}'
+                        where ID=${id}`);
+     }
     static async getMaxID(){
         let result = await db.execute(`SELECT MAX(ID) FROM predefinedtag;`);
         return result[0][0];
