@@ -180,6 +180,11 @@ exports.updateTag = async (req,res,next) => {
             throw new ErrorHandler(404, "Course not found", null);
         }
         await Tag.updateTags(req.params.id,type,name);
+        //await Tag.updateTags(courseTag[0].CourseTagID,'course',courseName);
+        if(type==='course'){
+            await Coursedetails.updateCourseNumber(req.params.id,name);
+        }
+       // await Coursedetails.updateCourseNumber(courseTag[0].CourseTagID,courseName);
         return res.status(200).send(new SuccessResponse("OK", 200, "Tag edited Successfully", null));
 
     }catch (e){

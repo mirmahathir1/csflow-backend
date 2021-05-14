@@ -30,4 +30,8 @@ module.exports = class Coursedetails {
                     where CourseTagID=${tagID}`);
         return result[0][0];
     }
+    static async updateCourseNumber(id,name){
+        await db.execute(`update coursedetail set CourseNo='${name}'
+                        where CourseTagID=${id}`);
+    }
 };
