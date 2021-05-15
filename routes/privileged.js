@@ -61,5 +61,38 @@ router.get('/tag',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,
     privilegedController.getAllTags
+)
+router.get('/report/answer',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    privilegedController.getReportedAnswers
+)
+router.delete('/report/answer/:id/resolve',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.resolveReportsofAnswer
+)
+router.get('/report/comment',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    privilegedController.getReportedComments
+)
+router.delete('/report/comment/:id/resolve',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.resolveReportsofComment
+)
+router.delete('/report/post/:id/resolve',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.resolveReports
+)
+router.get('/report/post',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    privilegedController.getReportedPosts
 );
 module.exports = router;

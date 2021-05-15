@@ -184,6 +184,7 @@ module.exports = class User {
 
         return result[0][0];
     }
+
      static async addUser(user) {
         return db.execute(`INSERT INTO user(id, batchID, name,
                                             email, password, joiningDate)

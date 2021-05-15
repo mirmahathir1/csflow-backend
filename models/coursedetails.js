@@ -9,7 +9,7 @@ module.exports = class Coursedetails {
         return result[0];
     }
     static async getCourseID(courseNumber){
-        let result = await db.execute(`SELECT ID,CourseTagID FROM coursedetail
+        let result = await db.execute(`SELECT ID,CourseTagID,BatchID FROM coursedetail
             WHERE CourseNo LIKE '${courseNumber}';`);
         return result[0];
     }
