@@ -362,7 +362,7 @@ exports.getReportedPosts = async (req,res,next) => {
         next(e);
     }
 }
-exports.resolveReports = async (req,res,next) => {
+exports.resolveReportsofPost = async (req,res,next) => {
     try {
         let user = res.locals.middlewareResponse.user;
         let batchid = user.batchID;
@@ -382,6 +382,31 @@ exports.resolveReports = async (req,res,next) => {
         }
         await Report.deleteReport(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Report has been resolved successfully", null));
+    }catch (e) {
+        next(e);
+    }
+}
+exports.removeReportsofPost = async (req,res,next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let courseName = await Post.getCourseNumberofPost(req.params.id);
+        if(courseName.length === 0){
+            throw new ErrorHandler(404, "Post not found", null);
+        }
+        let isReport = await Report.isReportedPost(req.params.id);
+        if(isReport.length===0){
+            throw new ErrorHandler(404, "There is no report related to this post", null);
+        }
+
+        let array = await Coursedetails.getCourseID(courseName[0].courseName);
+        let batchID = array[0].BatchID;
+        if(batchID !== batchid){
+            throw new ErrorHandler(401, "You are not enrolled in the related course to delete this report", null);
+        }
+        await Report.deleteReport(req.params.id);
+        await Post.deletePost(req.params.id);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Post and it's reports are deleted successfully", null));
     }catch (e) {
         next(e);
     }
@@ -470,6 +495,35 @@ exports.resolveReportsofAnswer = async (req,res,next) => {
         }
         await Report.deleteReportofAnswer(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Report has been resolved successfully", null));
+    }catch (e) {
+        next(e);
+    }
+}
+exports.removeReportsofAnswer = async (req,res,next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let postID = await Answer.getPostID(req.params.id);
+        if(postID.length===0){
+            throw new ErrorHandler(404, "Answer not found", null);
+        }
+        let courseName = await Post.getCourseNumberofPost(postID[0].PostID);
+        if(courseName.length === 0){
+            throw new ErrorHandler(404, "Post not found", null);
+        }
+        let isReport = await Report.isReportedAnswer(req.params.id);
+        if(isReport.length===0){
+            throw new ErrorHandler(404, "There is no report related to this answer", null);
+        }
+
+        let array = await Coursedetails.getCourseID(courseName[0].courseName);
+        let batchID = array[0].BatchID;
+        if(batchID !== batchid){
+            throw new ErrorHandler(401, "You are not enrolled in the related course to delete this report", null);
+        }
+        await Report.deleteReportofAnswer(req.params.id);
+        await Answer.deleteAnswer(req.params.id);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Answer and it’s reports are  deleted successfully", null));
     }catch (e) {
         next(e);
     }
@@ -586,3 +640,45 @@ exports.getReportedComments = async (req,res,next) => {
         next(e);
     }
 }
+exports.removeReportsofComment = async (req,res,next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let postIDofComments = await Comment.getPostID(req.params.id);
+        let answerIDofComments = await Comment.getAnswerID(req.params.id);
+        if(postIDofComments.length===0 && answerIDofComments.length===0){
+            throw new ErrorHandler(404, "Comment not found", null);
+        }
+        let relatedPostID;
+        if(!postIDofComments[0].PostID){
+            let postID = await Answer.getPostID(answerIDofComments[0].AnswerID);
+            /*if(postID.length===0){
+            throw new ErrorHandler(404, "Answer not found", null);
+             }*/
+            relatedPostID=postID[0].PostID;
+        }
+        else{
+            relatedPostID=postIDofComments[0].PostID;
+        }
+        let courseName = await Post.getCourseNumberofPost(relatedPostID);
+        if(courseName.length === 0){
+            throw new ErrorHandler(404, "Post not found", null);
+        }
+        let isReport = await Report.isReportedComment(req.params.id);
+        if(isReport.length===0){
+            throw new ErrorHandler(404, "There is no report related to this comment", null);
+        }
+
+        let array = await Coursedetails.getCourseID(courseName[0].courseName);
+        let batchID = array[0].BatchID;
+        if(batchID !== batchid){
+            throw new ErrorHandler(401, "You are not enrolled in the related course to delete this report", null);
+        }
+        await Report.deleteReportofComment(req.params.id);
+        await Comment.deleteComment(req.params.id);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Comment and it’s reports are deleted successfully", null));
+    }catch (e) {
+        next(e);
+    }
+}
+

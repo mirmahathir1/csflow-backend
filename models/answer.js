@@ -9,4 +9,7 @@ module.exports = class Answer{
                             from answer where ID=${id}`);
         return response[0][0];
     }
+    static async deleteAnswer(id){
+        await db.execute(`delete from answer where ID=${id}`);
+    }
 };

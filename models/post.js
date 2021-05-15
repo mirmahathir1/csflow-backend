@@ -13,4 +13,8 @@ module.exports = class Post{
         let response = await db.execute(`select Name from posttag where PostID=${postid}`);
         return response[0];
     }
+    static async deletePost(postid){
+        await db.execute(`delete from post where ID=${postid}`);
+    }
+
 };

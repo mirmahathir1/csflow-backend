@@ -73,6 +73,12 @@ router.delete('/report/answer/:id/resolve',
     idValidator.validateDetails(),
     privilegedController.resolveReportsofAnswer
 )
+router.delete('/report/answer/:id/remove',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.removeReportsofAnswer
+)
 router.get('/report/comment',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,
@@ -84,11 +90,23 @@ router.delete('/report/comment/:id/resolve',
     idValidator.validateDetails(),
     privilegedController.resolveReportsofComment
 )
+router.delete('/report/comment/:id/remove',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.removeReportsofComment
+)
 router.delete('/report/post/:id/resolve',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,
     idValidator.validateDetails(),
-    privilegedController.resolveReports
+    privilegedController.resolveReportsofPost
+)
+router.delete('/report/post/:id/remove',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    idValidator.validateDetails(),
+    privilegedController.removeReportsofPost
 )
 router.get('/report/post',
     authenticate.handleAuthentication,

@@ -13,4 +13,7 @@ module.exports = class Comment{
                             from comment where ID=${id}`);
         return response[0][0];
     }
+    static async deleteComment(id){
+        await db.execute(`delete from comment where ID=${id}`);
+    }
 };
