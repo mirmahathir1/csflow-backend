@@ -110,6 +110,7 @@ exports.acceptRequestedTag = async (req,res,next) =>{
         let tagid = count[0] + 1;
         await Tag.addTag(tagid,requestedTagDetails[0].Type,requestedTagDetails[0].Name);
         await Tag.addRelatedTag(requestedTagDetails[0].CourseTagID,tagid);
+        await Tag.deleteRequestedTag(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Tag accepted Successfully", null));
     }catch(e){
         next(e);
@@ -208,7 +209,7 @@ exports.deleteTag = async (req,res,next) =>{
         }
         let courseTag = await Tag.findCourseTag(tag[0].ID);
         let BatchID = await Coursedetails.findBatchID(courseTag[0].CourseTagID);
-        if(BatchID.BatchID != batchid){
+        if(BatchID.BatchID !== batchid){
             throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
         await Tag.deleteTag(req.params.id);
@@ -250,6 +251,7 @@ exports.updateRequestedTag = async (req,res,next) => {
         }
 
         let type1 = req.body.type;
+
         let type = type1.toLowerCase();
         let name = req.body.name;
         let tag = await Tag.findRequestedTagbyID(req.params.id);
@@ -265,7 +267,23 @@ exports.updateRequestedTag = async (req,res,next) => {
         if(course.length===0){
             throw new ErrorHandler(404, "Course not found", null);
         }
+
+
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let requestedTagDetails = await Tag.getRequestedTags(req.params.id);
+
+        let BatchID = await Coursedetails.findBatchID(requestedTagDetails[0].CourseTagID);
+        if(BatchID.BatchID != batchid){
+            throw new ErrorHandler(401, "You must be enrolled to this course to accept this tag", null);
+        }
+        let maxTagID = await Tag.getMaxID();
+        let count = Object.values(maxTagID);
+        let tagid = count[0] + 1;
         await Tag.updateRequestedTag(req.params.id,type,name);
+        await Tag.addTag(tagid,requestedTagDetails[0].Type,requestedTagDetails[0].Name);
+        await Tag.addRelatedTag(requestedTagDetails[0].CourseTagID,tagid);
+        await Tag.deleteRequestedTag(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Tag edited Successfully", null));
 
     }catch (e){
@@ -282,6 +300,14 @@ exports.deleteRequestedTag = async (req,res,next) => {
         let tag = await Tag.findRequestedTagbyID(req.params.id);
         if(tag.length===0){
             throw new ErrorHandler(404, "Tag not found", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let requestedTagDetails = await Tag.getRequestedTags(req.params.id);
+
+        let BatchID = await Coursedetails.findBatchID(requestedTagDetails[0].CourseTagID);
+        if(BatchID.BatchID !== batchid){
+            throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
         await Tag.deleteRequestedTag(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Tag deleted Successfully", null));
@@ -677,6 +703,75 @@ exports.removeReportsofComment = async (req,res,next) => {
         await Report.deleteReportofComment(req.params.id);
         await Comment.deleteComment(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Comment and it’s reports are deleted successfully", null));
+    }catch (e) {
+        next(e);
+    }
+}
+
+exports.deleteResourceArchive = async (req,res,next) =>{
+    try{
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let UserID = user.id;
+        let array = req.params.termId.split("-");
+        if(array[0].length!==1 || array[1].length!==1){
+            throw new ErrorHandler(404, "Invalid level/term", null);
+        }
+        let level = parseInt(array[0]);
+        let term = parseInt(array[1]);
+        if(level < 1 || level > 4 || term < 1 || term > 2){
+            throw new ErrorHandler(404, "Invalid level/term", null);
+        }
+        let archive = await Resourcearchive.getResourcesByLevelTerm(level,term);
+        if(archive.length===0){
+            throw new ErrorHandler(404, "Drive link for specified level/term not found", null);
+        }
+        let LevelTerm = await User.findLevelTerm(UserID);
+
+        if(LevelTerm.Level !== level || LevelTerm.Term !== term){
+            throw new ErrorHandler(401, "You have not enrolled in the specified level/term", null);
+        }
+        await Resourcearchive.deleteDriveLink(level,term);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Drive link deleted  successfully", null));
+
+    }catch (e) {
+        next(e);
+    }
+}
+exports.createResourceArchive = async (req,res,next) =>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, errors.errors[0].msg, errors);
+        }
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
+        let UserID = user.id;
+        let level = req.body.level;
+        let term = req.body.term;
+        let link = req.body.link;
+        let regEx = new RegExp("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)");
+        //let regEx = new RegExp("((http|https)(:\\/\\/))?([a-zA-Z0-9]+[.]{1}){2}[a-zA-z0-9]+(\\/{1}[a-zA-Z0-9]+)*\\/?", "i");
+        if(!link.match(regEx)){
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+
+        }
+        if(level < 1 || level > 4 || term < 1 || term > 2){
+            throw new ErrorHandler(404, "Level/Term not found", null);
+        }
+        let LevelTerm = await User.findLevelTerm(UserID);
+
+        if(LevelTerm.Level !== level || LevelTerm.Term !== term){
+            throw new ErrorHandler(401, "You have not enrolled in the specified level/term", null);
+        }
+        let archive = await Resourcearchive.getResourcesByLevelTerm(level,term);
+        if(archive.length===0){
+            await Resourcearchive.createDriveLink(batchid,level,term,link);
+        }else{
+            await Resourcearchive.updateDriveLink(level,term,link);
+        }
+
+        return res.status(201).send(new SuccessResponse("OK", 201, "Drive link created for level/term successfully", null));
     }catch (e) {
         next(e);
     }

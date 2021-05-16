@@ -184,7 +184,14 @@ module.exports = class User {
 
         return result[0][0];
     }
-
+    static async findLevelTerm(userid){
+        let response = await db.execute(`select Level,Term from user where ID=${userid}`);
+        return response[0][0];
+    }
+    static async isValidLevelTerm(level,term){
+        let response = await db.execute(`select ID from user where Level = ${level} AND Term = ${term};`);
+        return response[0];
+    }
      static async addUser(user) {
         return db.execute(`INSERT INTO user(id, batchID, name,
                                             email, password, joiningDate)

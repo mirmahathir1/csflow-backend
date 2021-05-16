@@ -4,6 +4,8 @@ const batchValidator = require('../validations/archive');
 const thesisValidator = require('../validations/thesis');
 const projectValidator = require('../validations/project');
 const idValidator = require('../validations/id');
+const driveValidator = require('../validations/LevelTerm');
+const tagValidator = require('../validations/privileged');
 const router = express.Router();
 const authenticate = require('../middlewares/authenticate');
 
@@ -15,6 +17,7 @@ router.get('/user',
 router.post('/tag',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,
+    tagValidator.validateDetails(),
     privilegedController.createTag
 )
 router.post('/tag/:id',
@@ -27,6 +30,7 @@ router.patch('/tag/:id',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,
     idValidator.validateDetails(),
+    tagValidator.validateDetails(),
     privilegedController.updateTag
 )
 router.delete('/tag/:id',
@@ -44,6 +48,7 @@ router.patch('/tag/requested/:id',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,
     idValidator.validateDetails(),
+    tagValidator.validateDetails(),
     privilegedController.updateRequestedTag
 )
 router.delete('/tag/requested/:id',
@@ -112,5 +117,17 @@ router.get('/report/post',
     authenticate.handleAuthentication,
     authenticate.handlePrivilegedUser,
     privilegedController.getReportedPosts
+)
+router.post('/archive/resource',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+    driveValidator.validateDetails(),
+    privilegedController.createResourceArchive
+)
+router.delete('/archive/resource/:termId',
+    authenticate.handleAuthentication,
+    authenticate.handlePrivilegedUser,
+   // idValidator.validateDetails(),
+    privilegedController.deleteResourceArchive
 );
 module.exports = router;
