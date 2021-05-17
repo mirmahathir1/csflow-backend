@@ -247,15 +247,26 @@ exports.getRequestedTags = async (req,res,next) => {
         }
         let payload = [];
         let i;
+        let user = res.locals.middlewareResponse.user;
+        let batchid = user.batchID;
         for(i=0;i<requestedTagDetails.length;i++){
-            let courseNumber = await Coursedetails.findCourseNumber(requestedTagDetails[i].CourseTagID);
-            payload.push({
-                id : requestedTagDetails[i].ID,
-                name : requestedTagDetails[i].Name,
-                type : requestedTagDetails[i].Type,
-                courseId : courseNumber.CourseNo,
-                requester : requestedTagDetails[i].RequesterID
-            });
+
+            let BatchID = await Coursedetails.findBatchID(requestedTagDetails[i].CourseTagID);
+            let batches = [];
+            let p;
+            for(p=0;p<BatchID.length;p++){
+                batches.push(BatchID[p].BatchID);
+            }
+            if(batches.includes(batchid) === true) {
+                let courseNumber = await Coursedetails.findCourseNumber(requestedTagDetails[i].CourseTagID);
+                payload.push({
+                    id: requestedTagDetails[i].ID,
+                    name: requestedTagDetails[i].Name,
+                    type: requestedTagDetails[i].Type,
+                    courseId: courseNumber.CourseNo,
+                    requester: requestedTagDetails[i].RequesterID
+                });
+            }
         }
         return res.status(200).send(new SuccessResponse("OK", 200, "Requested tags fetched Successfully", payload));
 
@@ -300,14 +311,15 @@ exports.updateRequestedTag = async (req,res,next) => {
             batches.push(BatchID[p].BatchID);
         }
         if(batches.includes(batchid) === false){
-            throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
+            throw new ErrorHandler(401, "You must be enrolled to this course to edit this tag", null);
         }
         let maxTagID = await Tag.getMaxID();
         let count = Object.values(maxTagID);
         let tagid = count[0] + 1;
         await Tag.updateRequestedTag(req.params.id,type,name);
-        await Tag.addTag(tagid,requestedTagDetails[0].Type,requestedTagDetails[0].Name);
-        await Tag.addRelatedTag(requestedTagDetails[0].CourseTagID,tagid);
+        let requestedTagDetail = await Tag.getRequestedTags(req.params.id);
+        await Tag.addTag(tagid,requestedTagDetail[0].Type,requestedTagDetail[0].Name);
+        await Tag.addRelatedTag(requestedTagDetail[0].CourseTagID,tagid);
         await Tag.deleteRequestedTag(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Tag edited Successfully", null));
 
@@ -360,8 +372,12 @@ exports.getReportedPosts = async (req,res,next) => {
         for(i=0;i<reportedPostIDs.length;i++){
             let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i].PostID);
             let array = await Coursedetails.getCourseID(courseName[0].courseName);
-            let batchID = array[0].BatchID;
-            if(batchID === batchid){
+            let batches = [];
+            let p;
+            for(p=0;p<array.length;p++){
+                batches.push(array[p].BatchID);
+            }
+            if(batches.includes(batchid) === true){
                 validPostIDs.push(reportedPostIDs[i].PostID);
             }
         }
@@ -370,6 +386,8 @@ exports.getReportedPosts = async (req,res,next) => {
             return res.status(200).send(new SuccessResponse("OK", 200, "There is no reported post", null));
         }
         for(j=0;j<validPostIDs.length;j++){
+            let counter = await Report.getCounterofPost(validPostIDs[j]);
+            let count = Object.values(counter);
             let postDetails = await Post.getPostDetails(validPostIDs[j]);
             let userDetails = await User.getUserDetailsByUserID(postDetails.UserID);
             let tagNames = await Post.getPostTags(validPostIDs[j]);
@@ -390,6 +408,7 @@ exports.getReportedPosts = async (req,res,next) => {
             }
             payload.push({
                 postId : validPostIDs[j],
+                reportCount : count[0],
                 owner : {
                     name : userDetails.Name,
                     studentId : userDetails.ID,
@@ -497,8 +516,12 @@ exports.getReportedAnswers = async (req,res,next) => {
         for(i=0;i<reportedPostIDs.length;i++){
             let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i]);
             let array = await Coursedetails.getCourseID(courseName[0].courseName);
-            let batchID = array[0].BatchID;
-            if(batchID === batchid){
+            let batches = [];
+            let p;
+            for(p=0;p<array.length;p++){
+                batches.push(array[p].BatchID);
+            }
+            if(batches.includes(batchid) === true){
                 validPostIDs.push(reportedPostIDs[i]);
                 validAnswerIDs.push(reportedAnswerIDs[i].AnswerID);
             }
@@ -508,12 +531,15 @@ exports.getReportedAnswers = async (req,res,next) => {
             return res.status(200).send(new SuccessResponse("OK", 200, "There is no reported answer ", null));
         }
         for(j=0;j<validPostIDs.length;j++) {
+            let counter = await Report.getCounterofAnswer(validAnswerIDs[j]);
+            let count = Object.values(counter);
             let answerDetails = await Answer.getAnswerDetails(validAnswerIDs[j])
             let postDetails = await Post.getPostDetails(validPostIDs[j]);
             let userDetails = await User.getUserDetailsByUserID(answerDetails.UserID);
             payload.push({
                 postId : validPostIDs[j],
                 answerId : validAnswerIDs[j],
+                reportCount : count[0],
                 owner : {
                     name : userDetails.Name,
                     studentId : userDetails.ID,
@@ -662,7 +688,7 @@ exports.getReportedComments = async (req,res,next) => {
 
             let postIDofComments = await Comment.getPostID(reportedCommentIDs[m].CommentID);
             let answerIDofComments = await Comment.getAnswerID(reportedCommentIDs[m].CommentID);
-            if(postIDofComments.length===0 && answerIDofComments.length===0){
+            if(postIDofComments.length === 0 && answerIDofComments.length === 0){
                 throw new ErrorHandler(404, "Comment not found", null);
             }
             let relatedPostID;
@@ -679,8 +705,12 @@ exports.getReportedComments = async (req,res,next) => {
         for(i=0;i<reportedPostIDs.length;i++){
             let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i]);
             let array = await Coursedetails.getCourseID(courseName[0].courseName);
-            let batchID = array[0].BatchID;
-            if(batchID === batchid){
+            let batches = [];
+            let p;
+            for(p=0;p<array.length;p++){
+                batches.push(array[p].BatchID);
+            }
+            if(batches.includes(batchid) === true){
                 validPostIDs.push(reportedPostIDs[i]);
                 validCommentIDs.push(reportedCommentIDs[i].CommentID);
             }
@@ -690,12 +720,15 @@ exports.getReportedComments = async (req,res,next) => {
             return res.status(200).send(new SuccessResponse("OK", 200, "There is no reported comment ", null));
         }
         for(j=0;j<validPostIDs.length;j++) {
+            let counter = await Report.getCounterofComment(validCommentIDs[j]);
+            let count = Object.values(counter);
             let commentDetails = await Comment.getCommentDetails(validCommentIDs[j]);
             let postDetails = await Post.getPostDetails(validPostIDs[j]);
             let userDetails = await User.getUserDetailsByUserID(commentDetails.UserID);
             payload.push({
                 postId : validPostIDs[j],
                 commentId : validCommentIDs[j],
+                reportCount : count[0],
                 owner : {
                     name : userDetails.Name,
                     studentId : userDetails.ID,

@@ -1,7 +1,7 @@
 const db = require('../db');
 module.exports = class Report{
     static async getReportedPostID(){
-        let response = await db.execute(`select PostID from report where PostID is not null `);
+        let response = await db.execute(`select DISTINCT PostID from report where PostID is not null `);
         return response[0];
     }
     static async deleteReport(id){
@@ -12,7 +12,7 @@ module.exports = class Report{
         return response[0];
     }
     static async getReportedAnswerID(){
-        let response = await db.execute(`select AnswerID from report where AnswerID is not null `);
+        let response = await db.execute(`select DISTINCT AnswerID from report where AnswerID is not null `);
         return response[0];
     }
     static async deleteReportofAnswer(id){
@@ -23,7 +23,7 @@ module.exports = class Report{
         return response[0];
     }
     static async getReportedCommentID(){
-        let response = await db.execute(`select CommentID from report where CommentID is not null `);
+        let response = await db.execute(`select DISTINCT CommentID from report where CommentID is not null `);
         return response[0];
     }
     static async deleteReportofComment(id){
@@ -32,6 +32,18 @@ module.exports = class Report{
     static async isReportedComment(id){
         let response = await db.execute(`select ID from report where CommentID=${id}`);
         return response[0];
+    }
+    static async getCounterofPost(postid){
+        let result = await db.execute(`SELECT COUNT (PostID) FROM report where PostID=${postid};`);
+        return result[0][0];
+    }
+    static async getCounterofAnswer(answerid){
+        let result = await db.execute(`SELECT COUNT (AnswerID) FROM report where AnswerID=${answerid};`);
+        return result[0][0];
+    }
+    static async getCounterofComment(commentid){
+        let result = await db.execute(`SELECT COUNT (CommentID) FROM report where CommentID=${commentid};`);
+        return result[0][0];
     }
 
 };
