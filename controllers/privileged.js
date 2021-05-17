@@ -102,8 +102,13 @@ exports.acceptRequestedTag = async (req,res,next) =>{
             throw new ErrorHandler(404, "Tag not found", null);
         }
         let BatchID = await Coursedetails.findBatchID(requestedTagDetails[0].CourseTagID);
-        if(BatchID.BatchID != batchid){
-            throw new ErrorHandler(401, "You must be enrolled to this course to accept this tag", null);
+        let batches = [];
+        let p;
+        for(p=0;p<BatchID.length;p++){
+            batches.push(BatchID[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
+            throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
         let maxTagID = await Tag.getMaxID();
         let count = Object.values(maxTagID);
@@ -138,8 +143,13 @@ exports.createTag = async (req,res,next) => {
         }
 
         let BatchID = await Coursedetails.findBatchID(course[0].CourseTagID);
-        if(BatchID.BatchID != batchid){
-            throw new ErrorHandler(401, "You must be enrolled to this course to create this tag", null);
+        let batches = [];
+        let p;
+        for(p=0;p<BatchID.length;p++){
+            batches.push(BatchID[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
+            throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
 
         let maxTagID = await Tag.getMaxID();
@@ -176,8 +186,13 @@ exports.updateTag = async (req,res,next) => {
             throw new ErrorHandler(404, "CourseTag not found", null);
         }
         let BatchID = await Coursedetails.findBatchID(courseTag[0].CourseTagID);
-        if(BatchID.BatchID != batchid){
-            throw new ErrorHandler(401, "You must be enrolled to this course to edit this tag", null);
+        let batches = [];
+        let p;
+        for(p=0;p<BatchID.length;p++){
+            batches.push(BatchID[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
+            throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
         let courseName = req.body.courseId;
         let course = await Coursedetails.getCourseID(courseName);
@@ -209,7 +224,12 @@ exports.deleteTag = async (req,res,next) =>{
         }
         let courseTag = await Tag.findCourseTag(tag[0].ID);
         let BatchID = await Coursedetails.findBatchID(courseTag[0].CourseTagID);
-        if(BatchID.BatchID !== batchid){
+        let batches = [];
+        let p;
+        for(p=0;p<BatchID.length;p++){
+            batches.push(BatchID[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
             throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
         await Tag.deleteTag(req.params.id);
@@ -274,8 +294,13 @@ exports.updateRequestedTag = async (req,res,next) => {
         let requestedTagDetails = await Tag.getRequestedTags(req.params.id);
 
         let BatchID = await Coursedetails.findBatchID(requestedTagDetails[0].CourseTagID);
-        if(BatchID.BatchID != batchid){
-            throw new ErrorHandler(401, "You must be enrolled to this course to accept this tag", null);
+        let batches = [];
+        let p;
+        for(p=0;p<BatchID.length;p++){
+            batches.push(BatchID[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
+            throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
         let maxTagID = await Tag.getMaxID();
         let count = Object.values(maxTagID);
@@ -306,7 +331,12 @@ exports.deleteRequestedTag = async (req,res,next) => {
         let requestedTagDetails = await Tag.getRequestedTags(req.params.id);
 
         let BatchID = await Coursedetails.findBatchID(requestedTagDetails[0].CourseTagID);
-        if(BatchID.BatchID !== batchid){
+        let batches = [];
+        let p;
+        for(p=0;p<BatchID.length;p++){
+            batches.push(BatchID[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
             throw new ErrorHandler(401, "You must be enrolled to this course to delete this tag", null);
         }
         await Tag.deleteRequestedTag(req.params.id);
@@ -402,10 +432,15 @@ exports.resolveReportsofPost = async (req,res,next) => {
         }
 
         let array = await Coursedetails.getCourseID(courseName[0].courseName);
-        let batchID = array[0].BatchID;
-        if(batchID !== batchid){
+        let batches = [];
+        let p;
+        for(p=0;p<array.length;p++){
+            batches.push(array[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
             throw new ErrorHandler(401, "You are not enrolled in the related course to resolve this report", null);
         }
+
         await Report.deleteReport(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Report has been resolved successfully", null));
     }catch (e) {
@@ -426,9 +461,13 @@ exports.removeReportsofPost = async (req,res,next) => {
         }
 
         let array = await Coursedetails.getCourseID(courseName[0].courseName);
-        let batchID = array[0].BatchID;
-        if(batchID !== batchid){
-            throw new ErrorHandler(401, "You are not enrolled in the related course to delete this report", null);
+        let batches = [];
+        let p;
+        for(p=0;p<array.length;p++){
+            batches.push(array[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
+            throw new ErrorHandler(401, "You are not enrolled in the related course to resolve this report", null);
         }
         await Report.deleteReport(req.params.id);
         await Post.deletePost(req.params.id);
@@ -515,8 +554,12 @@ exports.resolveReportsofAnswer = async (req,res,next) => {
         }
 
         let array = await Coursedetails.getCourseID(courseName[0].courseName);
-        let batchID = array[0].BatchID;
-        if(batchID !== batchid){
+        let batches = [];
+        let p;
+        for(p=0;p<array.length;p++){
+            batches.push(array[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
             throw new ErrorHandler(401, "You are not enrolled in the related course to resolve this report", null);
         }
         await Report.deleteReportofAnswer(req.params.id);
@@ -543,9 +586,13 @@ exports.removeReportsofAnswer = async (req,res,next) => {
         }
 
         let array = await Coursedetails.getCourseID(courseName[0].courseName);
-        let batchID = array[0].BatchID;
-        if(batchID !== batchid){
-            throw new ErrorHandler(401, "You are not enrolled in the related course to delete this report", null);
+        let batches = [];
+        let p;
+        for(p=0;p<array.length;p++){
+            batches.push(array[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
+            throw new ErrorHandler(401, "You are not enrolled in the related course to resolve this report", null);
         }
         await Report.deleteReportofAnswer(req.params.id);
         await Answer.deleteAnswer(req.params.id);
@@ -584,8 +631,12 @@ exports.resolveReportsofComment = async (req,res,next) => {
         }
 
         let array = await Coursedetails.getCourseID(courseName[0].courseName);
-        let batchID = array[0].BatchID;
-        if(batchID !== batchid){
+        let batches = [];
+        let p;
+        for(p=0;p<array.length;p++){
+            batches.push(array[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
             throw new ErrorHandler(401, "You are not enrolled in the related course to resolve this report", null);
         }
         await Report.deleteReportofComment(req.params.id);
@@ -696,9 +747,13 @@ exports.removeReportsofComment = async (req,res,next) => {
         }
 
         let array = await Coursedetails.getCourseID(courseName[0].courseName);
-        let batchID = array[0].BatchID;
-        if(batchID !== batchid){
-            throw new ErrorHandler(401, "You are not enrolled in the related course to delete this report", null);
+        let batches = [];
+        let p;
+        for(p=0;p<array.length;p++){
+            batches.push(array[p].BatchID);
+        }
+        if(batches.includes(batchid) === false){
+            throw new ErrorHandler(401, "You are not enrolled in the related course to resolve this report", null);
         }
         await Report.deleteReportofComment(req.params.id);
         await Comment.deleteComment(req.params.id);

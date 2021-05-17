@@ -23,7 +23,7 @@ module.exports = class Coursedetails {
     static async findBatchID(tagID){
         let result = await db.execute(`SELECT BatchID from coursedetail
                     where CourseTagID=${tagID}`);
-        return result[0][0];
+        return result[0];
     }
     static async findCourseNumber(tagID){
         let result = await db.execute(`SELECT CourseNo from coursedetail
