@@ -636,6 +636,9 @@ exports.resolveReportsofComment = async (req,res,next) => {
         if(postIDofComments.length===0 && answerIDofComments.length===0){
             throw new ErrorHandler(404, "Comment not found", null);
         }
+        if(!postIDofComments[0].PostID && !answerIDofComments[0].AnswerID){
+            throw new ErrorHandler(404, "Comment not found", null);
+        }
         let relatedPostID;
         if(!postIDofComments[0].PostID){
             let postID = await Answer.getPostID(answerIDofComments[0].AnswerID);
@@ -689,6 +692,9 @@ exports.getReportedComments = async (req,res,next) => {
             let postIDofComments = await Comment.getPostID(reportedCommentIDs[m].CommentID);
             let answerIDofComments = await Comment.getAnswerID(reportedCommentIDs[m].CommentID);
             if(postIDofComments.length === 0 && answerIDofComments.length === 0){
+                throw new ErrorHandler(404, "Comment not found", null);
+            }
+            if(!postIDofComments[0].PostID && !answerIDofComments[0].AnswerID){
                 throw new ErrorHandler(404, "Comment not found", null);
             }
             let relatedPostID;
@@ -759,12 +765,12 @@ exports.removeReportsofComment = async (req,res,next) => {
         if(postIDofComments.length===0 && answerIDofComments.length===0){
             throw new ErrorHandler(404, "Comment not found", null);
         }
+        if(!postIDofComments[0].PostID && !answerIDofComments[0].AnswerID){
+            throw new ErrorHandler(404, "Comment not found", null);
+        }
         let relatedPostID;
         if(!postIDofComments[0].PostID){
             let postID = await Answer.getPostID(answerIDofComments[0].AnswerID);
-            /*if(postID.length===0){
-            throw new ErrorHandler(404, "Answer not found", null);
-             }*/
             relatedPostID=postID[0].PostID;
         }
         else{
