@@ -7,6 +7,7 @@ exports.validateDetails = () => {
         body('description', 'Please provide description').exists().isString(),
         body('youtube', 'Please provide link').exists().isString(),
         body('github', 'Please provide link').exists().isString(),
+        body('tags', 'Please provide tags').isArray({min: 1}),
         //body('writers', 'Please provide writers').isArray({min: 1}),
         body('owners', 'Please provide owners').isArray({min: 1})
 

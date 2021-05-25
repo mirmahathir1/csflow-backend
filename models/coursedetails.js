@@ -8,6 +8,13 @@ module.exports = class Coursedetails {
 
         return result[0];
     }
+    static async findCoursesofProjects() {
+        let result = await db.execute(`SELECT DISTINCT c.CourseNo as courseId, c.Title as courseTitle
+                                       FROM coursedetail c
+                                                JOIN projectarchive p ON c.ID = p.CourseID;`);
+
+        return result[0];
+    }
     static async getCourseID(courseNumber){
         let result = await db.execute(`SELECT ID,CourseTagID,BatchID FROM coursedetail
             WHERE CourseNo LIKE '${courseNumber}';`);

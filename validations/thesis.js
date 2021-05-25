@@ -6,6 +6,7 @@ exports.validateDetails = () => {
         body('description', 'Please provide description').exists().isString(),
         body('link', 'Please provide link').exists().isString(),
         body('writers', 'Please provide writers').isArray({min: 1}),
+        body('tags', 'Please provide tags').isArray({min: 1}),
         body('owners', 'Please provide owners').isArray({min: 1})
         //body('owners','pls').isObject()
         //body('batchNumber','Batch number must be numeric').isNumeric(),

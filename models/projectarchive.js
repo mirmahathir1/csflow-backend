@@ -20,21 +20,22 @@ module.exports = class Projectarchive {
         return result[0];
     }
 
-    static async update(id, courseID, batchID, title, description, videolink, codelink) {
+    static async update(id, courseID, batchID, title, description, videolink, codelink,topics) {
         await db.execute(`UPDATE projectarchive
                           SET CourseID=${courseID},
                               BatchID=${batchID},
                               Title='${title}',
                               VideoLink='${videolink}',
                               Description='${description}',
-                              CodeLink='${codelink}'
+                              CodeLink='${codelink}',
+                              TagName='${topics}'
                           WHERE ID = ${id};`);
     }
 
-    static async create(id, courseID, batchID, title, description, videolink, codelink) {
-        await db.execute(`INSERT INTO projectarchive(ID, CourseID, BatchID, Title, Description, VideoLink, CodeLink)
+    static async create(id, courseID, batchID, title, description, videolink, codelink,topics) {
+        await db.execute(`INSERT INTO projectarchive(ID, CourseID, BatchID, Title, Description, VideoLink, CodeLink,TagName)
                           VALUES (${id}, ${courseID}, ${batchID}, '${title}', '${description}', '${videolink}',
-                                  '${codelink}');`);
+                                  '${codelink}','${topics}');`);
     }
 
     static async userAuthorization(projectID, userID) {
@@ -72,11 +73,18 @@ module.exports = class Projectarchive {
     }
 
     static async findDetailsByProjectID(id) {
-        let result = await db.execute(`SELECT o.UserID,t.BatchID,t.CourseID, t.Title, t.Description, t.VideoLink, t.CodeLink
+        let result = await db.execute(`SELECT o.UserID,t.BatchID,t.CourseID, t.Title, t.Description, t.VideoLink, t.CodeLink,t.TagName
                                        FROM projectarchive t
                                                 JOIN projectowner o ON t.ID = o.ProjectID
                                        WHERE t.id = ${id};`)
         return result[0];
+    }
+    static async findProjects(text) {
+        let result = await db.execute(`SELECT ID as id,Title as name
+                                       FROM projectarchive
+                                       WHERE Title LIKE '%${text}%' OR Description LIKE '%${text}%' OR Tagname LIKE '%${text}%'`);
+        return result[0];
+
     }
 
     static async getMaxID() {

@@ -11,6 +11,14 @@ router.get('/thesis/batch/:batchNumber',
     batchValidator.validateDetails(),
     archiveController.getThesisByBatchID
 )
+router.get('/thesis/topics',
+    authenticate.handleAuthentication,
+    archiveController.getThesisTopics
+)
+router.get('/thesis/search',
+    authenticate.handleAuthentication,
+    archiveController.searchThesis
+)
 router.get('/thesis/:id',
     authenticate.handleAuthentication,
     idValidator.validateDetails(),
@@ -42,11 +50,20 @@ router.get('/project/batch/:batchNumber/:courseNum',
     batchValidator.validateDetails(),
     archiveController.findProjectList
 )
+router.get('/project/topics',
+    authenticate.handleAuthentication,
+    archiveController.getCoursesofProjects
+)
+router.get('/project/search',
+    authenticate.handleAuthentication,
+    archiveController.searchProjects
+)
 router.get('/project/:id',
     authenticate.handleAuthentication,
     idValidator.validateDetails(),
     archiveController.getProjectDetailsByProjectID
 )
+
 router.post('/project',
     authenticate.handleAuthentication,
     projectValidator.validateDetails(),
@@ -63,6 +80,7 @@ router.delete('/project/:id',
     idValidator.validateDetails(),
     archiveController.deleteProject
 )
+
 router.get('/batch',
     authenticate.handleAuthentication,
     archiveController.getBatchList

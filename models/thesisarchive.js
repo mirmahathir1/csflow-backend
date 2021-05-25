@@ -6,15 +6,15 @@ module.exports = class Thesisarchive {
         let result= await db.execute(`SELECT o.UserID FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.ID=${thesisID};`);
         return result[0];
     }
-    static async update(id,batchID,title,authors,abstract,link){
+    static async update(id,batchID,title,authors,abstract,link,topics){
         await db.execute(`UPDATE thesisarchive
-        SET BatchID=${batchID},Title='${title}',Authors='${authors}',Abstract='${abstract}',Link='${link}'
+        SET BatchID=${batchID},Title='${title}',Authors='${authors}',Abstract='${abstract}',Link='${link}',TagName='${topics}'
         WHERE ID=${id};`);
     }
 
-    static async create(id,batchID,title,authors,abstract,link){
-        await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link) 
-            VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}')`);
+    static async create(id,batchID,title,authors,abstract,link,topics){
+        await db.execute(`INSERT INTO thesisarchive(ID,BatchID,Title,Authors,Abstract,Link,TagName) 
+            VALUES(${id},${batchID},'${title}','${authors}','${abstract}','${link}','${topics}')`);
     }
     static async userAuthorization(thesisID,userID){
         let row = await this.findUsers(thesisID);
@@ -43,12 +43,19 @@ where c.ThesisID=${id};`);
         return result[0];
     }
     static async findDetailsByThesisID(id){
-        let result = await db.execute(`SELECT o.UserID,t.BatchID,t.Title,t.Authors,t.Abstract,t.Link FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.id = ${id};`)
+        let result = await db.execute(`SELECT o.UserID,t.BatchID,t.Title,t.Authors,t.Abstract,t.Link,t.TagName FROM thesisarchive t JOIN thesisowner o ON t.ID=o.ThesisID WHERE t.id = ${id};`)
         return result[0];
     }
     static async getThesisTitleByBatchID(batchID){
         let result = await db.execute(`SELECT ID,Title FROM thesisarchive WHERE batchID = ${batchID};`);
         return result[0];
+    }
+    static async findTheses(text) {
+        let result = await db.execute(`SELECT ID ,Title 
+                                       FROM thesisarchive
+                                       WHERE Title LIKE '%${text}%' OR Abstract LIKE '%${text}%' OR Tagname LIKE '%${text}%'`);
+        return result[0];
+
     }
     static async getMaxID(){
         let result = await db.execute(`SELECT MAX(ID) FROM thesisarchive;`);

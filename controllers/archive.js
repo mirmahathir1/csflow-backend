@@ -6,6 +6,7 @@ const Projectowner = require('../models/projectowner');
 const Coursedetails = require('../models/coursedetails');
 const Batch = require('../models/batch');
 const User = require('../models/user');
+const ThesisTag = require('../models/thesistag');
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
@@ -109,6 +110,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
         let rawComments = await Thesisarchive.findCommentsByThesisID(req.params.id);
         let firstThesis = theses[0];
         let array = firstThesis.Authors.split(",");
+        let newArray = firstThesis.TagName.split(",");
         let comments = [];
 
         let k;
@@ -128,6 +130,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
             batch: firstThesis.BatchID,
             title: firstThesis.Title,
             link: firstThesis.Link,
+            tags: newArray,
             writers: array,
             description: firstThesis.Abstract,
             owners: owners,
@@ -148,9 +151,11 @@ exports.postThesis = async (req, res, next) => {
 
         let title = req.body.title;
         let Writers = req.body.writers;
+        let Topics = req.body.tags;
 
 
         let writers = Writers.join(",");
+        let topics = Topics.join(",");
         let description = req.body.description;
         let link = req.body.link;
         let owners = req.body.owners;
@@ -171,6 +176,12 @@ exports.postThesis = async (req, res, next) => {
         for (j = 0; j < Writers.length; j++) {
 
             if (typeof Writers[j] != "string") {
+                throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+            }
+        }
+        for (j = 0; j < Topics.length; j++) {
+
+            if (typeof Topics[j] != "string") {
                 throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
             }
         }
@@ -203,7 +214,7 @@ exports.postThesis = async (req, res, next) => {
         let id = count[0] + 1;
 
         //batchID,title,authors,abstract,link,owners
-        await Thesisarchive.create(id, batchid, title, writers, description, link);
+        await Thesisarchive.create(id, batchid, title, writers, description, link,topics);
         let k;
 
         for (k = 0; k < owners.length; k++) {
@@ -248,9 +259,10 @@ exports.editThesis = async (req, res, next) => {
         let userid = user.id;
         let title = req.body.title;
         let Writers = req.body.writers;
-
+        let Topics = req.body.tags;
 
         let writers = Writers.join(",");
+        let topics = Topics.join(",");
         let description = req.body.description;
         let link = req.body.link;
         let owners = req.body.owners;
@@ -271,6 +283,12 @@ exports.editThesis = async (req, res, next) => {
         for (j = 0; j < Writers.length; j++) {
 
             if (typeof Writers[j] != "string") {
+                throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+            }
+        }
+        for (j = 0; j < Topics.length; j++) {
+
+            if (typeof Topics[j] != "string") {
                 throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
             }
         }
@@ -306,7 +324,7 @@ exports.editThesis = async (req, res, next) => {
 
         }
 
-        await Thesisarchive.update(req.params.id, batchid, title, writers, description, link);
+        await Thesisarchive.update(req.params.id, batchid, title, writers, description, link,topics);
         await ThesisOwner.DeleteThesisOwner(req.params.id);
         let q;
         for(q=0;q<owners.length;q++){
@@ -318,6 +336,36 @@ exports.editThesis = async (req, res, next) => {
         next(e);
     }
 };
+exports.getThesisTopics = async(req,res,next)=>{
+    try{
+        let topics = await ThesisTag.getTopics();
+        if(topics.length===0){
+            throw new ErrorHandler(404, "There is no thesis topic", null);
+        }
+        let payload = [],i;
+        for(i=0;i<topics.length;i++){
+            payload.push(topics[i].TagName);
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "List of thesis topics fetched successfully", payload));
+
+    }catch (e) {
+        next(e);
+    }
+}
+exports.searchThesis = async (req,res,next)=>{
+    try{
+
+        let theses = await Thesisarchive.findTheses(req.query.text);
+        if(theses.length===0){
+            throw new ErrorHandler(404, "thesis related this text not found", null);
+
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "List of theses fetched successfully", theses));
+
+    }catch (e) {
+        next(e);
+    }
+}
 exports.findCoursesOfProject = async(req,res,next)=>{
     try {
         const errors = validationResult(req);
@@ -378,7 +426,33 @@ exports.findProjectList = async(req,res,next)=>{
         next(e);
     }
 };
+exports.getCoursesofProjects = async (req,res,next) => {
+    try{
+        let courseListOfProject = await Coursedetails.findCoursesofProjects();
+        if(courseListOfProject.length===0){
+            //throw new ErrorHandler(404,"Batch not found",null);
+            return res.status(200).send(new SuccessResponse("OK", 200, "Courses with projects not found",[]));
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "Courses with projects fetched successfully", courseListOfProject));
+    }catch (e) {
+        next(e);
+    }
 
+}
+exports.searchProjects = async (req,res,next)=>{
+    try{
+
+        let projects = await Projectarchive.findProjects(req.query.text);
+        if(projects.length===0){
+            throw new ErrorHandler(404, "project related this text not found", null);
+
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "List of project fetched successfully", projects));
+
+    }catch (e) {
+        next(e);
+    }
+}
 exports.postProject = async (req, res, next) => {
     try {
 
@@ -389,7 +463,8 @@ exports.postProject = async (req, res, next) => {
         let title = req.body.title;
         let codeLink = req.body.github;
         let videoLink = req.body.youtube;
-
+        let Topics = req.body.tags;
+        let topics = Topics.join(",");
         let description = req.body.description;
         let courseNo = req.body.course;
         let owners = req.body.owners;
@@ -403,6 +478,12 @@ exports.postProject = async (req, res, next) => {
         for (i = 0; i < owners.length; i++) {
 
             if (typeof owners[i] != "number") {
+                throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+            }
+        }
+        for (i = 0; i < Topics.length; i++) {
+
+            if (typeof Topics[i] != "string") {
                 throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
             }
         }
@@ -440,7 +521,7 @@ exports.postProject = async (req, res, next) => {
         let id = count[0] + 1;
 
 
-        await Projectarchive.create(id,courseID[0].ID,batchid,title,description,videoLink,codeLink);
+        await Projectarchive.create(id,courseID[0].ID,batchid,title,description,videoLink,codeLink,topics);
         let k;
 
         for (k = 0; k < owners.length; k++) {
@@ -463,7 +544,8 @@ exports.editProject = async (req, res, next) => {
         let title = req.body.title;
         let codeLink = req.body.github;
         let videoLink = req.body.youtube;
-
+        let Topics = req.body.tags;
+        let topics = Topics.join(",");
         let description = req.body.description;
         let courseNo = req.body.course;
         let owners = req.body.owners;
@@ -477,6 +559,12 @@ exports.editProject = async (req, res, next) => {
         for (i = 0; i < owners.length; i++) {
 
             if (typeof owners[i] != "number") {
+                throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+            }
+        }
+        for (i = 0; i < Topics.length; i++) {
+
+            if (typeof Topics[i] != "string") {
                 throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
             }
         }
@@ -517,7 +605,7 @@ exports.editProject = async (req, res, next) => {
 
         }
 
-        await Projectarchive.update(req.params.id,courseID[0].ID,batchid,title,description,videoLink,codeLink);
+        await Projectarchive.update(req.params.id,courseID[0].ID,batchid,title,description,videoLink,codeLink,topics);
 
         await Projectowner.DeleteProjectOwner(req.params.id);
         let q;
@@ -596,10 +684,12 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
             });
         }
         let CourseTitle = await Coursedetails.findCourseTitle(firstProject.CourseID);
+        let newArray = firstProject.TagName.split(",");
         let Details = {
             batch: firstProject.BatchID,
             course_no: CourseTitle[0].CourseNo,
             course_title:CourseTitle[0].Title,
+            tags: newArray,
             title: firstProject.Title,
             description: firstProject.Description,
             github: firstProject.CodeLink,
