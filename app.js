@@ -1,5 +1,5 @@
 const express = require('express')
-var cors = require('cors')
+const cors = require('cors')
 const dotenv = require('dotenv')
 const bodyParser = require('body-parser');
 
@@ -17,21 +17,25 @@ const userRoutes = require('./routes/user');
 const authRoutes = require('./routes/auth');
 const archiveRoutes = require('./routes/archive');
 const privilegedRoutes = require('./routes/privileged');
+const tagRoutes = require('./routes/tag');
+
 const {handleError} = require("./response/error");
+
 app.use('/user', userRoutes);
-app.use('/auth',authRoutes);
-app.use('/archive',archiveRoutes);
-app.use('/privileged',privilegedRoutes);
+app.use('/auth', authRoutes);
+app.use('/archive', archiveRoutes);
+app.use('/privileged', privilegedRoutes);
+app.use('/tag', tagRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
-const routeNotFoundMessage  = {
-    "status":"ERROR",
-    "statusCode":400,
-    "message":"Route not found",
-    "payload":null
+const routeNotFoundMessage = {
+    "status": "ERROR",
+    "statusCode": 400,
+    "message": "Route not found",
+    "payload": null
 };
 
 app.get("*", (req, res) => {
