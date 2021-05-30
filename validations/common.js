@@ -1,7 +1,7 @@
 const {body, param, header, query} = require('express-validator/check');
 
 exports.isFieldExist = (fieldName) => {
-    return body(fieldName, `Please provide a field with name ${fieldName}`).exists();
+    return body(fieldName, `Please provide a field with name '${fieldName}'`).exists();
 };
 
 exports.validateEmail = () => {
@@ -11,10 +11,10 @@ exports.validateEmail = () => {
     ];
 };
 
-exports.matchNumericType = (filedName) => {
-    return body(filedName, `${filedName} must be numeric`).isNumeric();
+exports.matchNumericType = (fieldName) => {
+    return body(fieldName, `'${fieldName}' must be numeric`).isNumeric();
 }
 
-exports.matchStringType = (filedName) => {
-    return body(filedName, `${filedName} must be text`).isString();
+exports.matchStringType = (fieldName) => {
+    return body(fieldName, `'${fieldName}' must be text`).isString();
 }
