@@ -89,9 +89,9 @@ exports.uploadProfilePic = async (req, res, next) => {
 
         let user = res.locals.middlewareResponse.user;
         // console.log();
-        if (!user) {
+        if (!user)
             return res.status(401).send(new ErrorHandler(401, "Invalid user"));
-        }
+
         await user.saveProfilePicLink(imageLink);
 
         await deleteImage(user.profilePic);

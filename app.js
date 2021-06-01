@@ -18,6 +18,8 @@ const authRoutes = require('./routes/auth');
 const archiveRoutes = require('./routes/archive');
 const privilegedRoutes = require('./routes/privileged');
 const tagRoutes = require('./routes/tag');
+const postRoutes = require('./routes/post');
+const storageRoutes = require('./routes/storage');
 
 const {handleError} = require("./response/error");
 
@@ -26,6 +28,8 @@ app.use('/auth', authRoutes);
 app.use('/archive', archiveRoutes);
 app.use('/privileged', privilegedRoutes);
 app.use('/tag', tagRoutes);
+app.use('/post', postRoutes);
+app.use('/resources', storageRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
