@@ -151,4 +151,12 @@ module.exports = class Tag {
         return result[0];
     }
 
+    static async isExist(tag, tagType) {
+        const result = await db.execute(`select 1 as exist
+                                         from predefinedtag
+                                         where Type = '${tagType}'
+                                           and name = '${tag}'`);
+        return result[0][0];
+    }
+
 };

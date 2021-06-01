@@ -13,7 +13,12 @@ const baseURL = "https://storage.googleapis.com/csflow-buet.appspot.com/";
 const deleteImage = async (filename) => {
     filename = filename.substring(baseURL.length);
     // console.log(filename);
-    await storage.bucket(bucketName).file(filename).delete();
+    try {
+        await storage.bucket(bucketName).file(filename).delete();
+    } catch (e) {
+        // console.log(e)
+        // console.log("file not found");
+    }
 }
 
 module.exports = {

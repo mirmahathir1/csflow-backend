@@ -73,14 +73,15 @@ exports.handleAuthentication = async (req, res, next) => {
 
     try {
         let user = await User.findByToken(token);
-        // console.log();
-        if (!user) {
+
+        if (!user)
             return res.status(401).send(new ErrorHandler(401, "Invalid user"));
-        }
+
         res.locals.middlewareResponse = {
             user,
             token
         };
+
         return next();
 
     } catch (e) {
