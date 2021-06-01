@@ -11,7 +11,7 @@ const authenticate = require('../middlewares/authenticate');
 
 router.get('/user',
     authenticate.handleAuthentication,
-    //authenticate.handlePrivilegedUser,
+    authenticate.handlePrivilegedUser,
     privilegedController.getUsers
 )
 router.post('/tag',

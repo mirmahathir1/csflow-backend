@@ -822,7 +822,15 @@ exports.deleteResourceArchive = async (req,res,next) =>{
         }
         let LevelTerm = await User.findLevelTerm(UserID);
 
-        if(LevelTerm.Level !== level || LevelTerm.Term !== term){
+        /*if(LevelTerm.Level !== level || LevelTerm.Term !== term){
+            throw new ErrorHandler(401, "You have not enrolled in the specified level/term", null);
+        }*/
+        if(LevelTerm.Level < level){
+            //error
+            throw new ErrorHandler(401, "You have not enrolled in the specified level/term", null);
+        }
+        else if(LevelTerm.Level === level && LevelTerm.Term < term){
+            //error
             throw new ErrorHandler(401, "You have not enrolled in the specified level/term", null);
         }
         await Resourcearchive.deleteDriveLink(level,term);
@@ -851,22 +859,31 @@ exports.createResourceArchive = async (req,res,next) =>{
 
         }
         if(level < 1 || level > 4 || term < 1 || term > 2){
-            throw new ErrorHandler(404, "Level/Term not found", null);
+            throw new ErrorHandler(404, "level/ term not found", null);
         }
         let LevelTerm = await User.findLevelTerm(UserID);
-
-        if(LevelTerm.Level !== level || LevelTerm.Term !== term){
+        if(LevelTerm.Level < level){
+            //error
             throw new ErrorHandler(401, "You have not enrolled in the specified level/term", null);
         }
-        let archive = await Resourcearchive.getResourcesByLevelTerm(level,term);
-        if(archive.length===0){
-            await Resourcearchive.createDriveLink(batchid,level,term,link);
-        }else{
-            await Resourcearchive.updateDriveLink(level,term,link);
+        else if(LevelTerm.Level === level && LevelTerm.Term < term){
+            //error
+            throw new ErrorHandler(401, "You have not enrolled in the specified level/term", null);
+        }
+
+        //success
+        let archive = await Resourcearchive.getResourcesByLevelTerm(level, term);
+        if (archive.length === 0) {
+            await Resourcearchive.createDriveLink(batchid, level, term, link);
+        } else {
+            //await Resourcearchive.updateDriveLink(level, term, link);
+            throw new ErrorHandler(400, "Resource already created", null);
+
         }
 
         return res.status(201).send(new SuccessResponse("OK", 201, "Drive link created for level/term successfully", null));
-    }catch (e) {
+
+        }catch (e) {
         next(e);
     }
 }
