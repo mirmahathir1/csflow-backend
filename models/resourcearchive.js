@@ -6,8 +6,8 @@ module.exports = class Resourcearchive {
        let result = await db.execute(`SELECT Level,Term,Link FROM resourcearchive WHERE BatchID = ${batch_no};`);
        return result[0];
     }
-    static async getResourcesByLevelTerm(level,term){
-        let result = await db.execute(`SELECT Link FROM resourcearchive WHERE Level = ${level} AND Term = ${term};`);
+    static async getResourcesByLevelTerm(level,term,batchid){
+        let result = await db.execute(`SELECT Link FROM resourcearchive WHERE Level = ${level} AND Term = ${term} AND BatchID=${batchid};`);
         return result[0];
     }
     static async createDriveLink(batchid,level,term,link){

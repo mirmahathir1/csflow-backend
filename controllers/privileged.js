@@ -816,7 +816,7 @@ exports.deleteResourceArchive = async (req,res,next) =>{
         if(level < 1 || level > 4 || term < 1 || term > 2){
             throw new ErrorHandler(404, "Invalid level/term", null);
         }
-        let archive = await Resourcearchive.getResourcesByLevelTerm(level,term);
+        let archive = await Resourcearchive.getResourcesByLevelTerm(level,term,batchid);
         if(archive.length===0){
             throw new ErrorHandler(404, "Drive link for specified level/term not found", null);
         }
@@ -872,7 +872,7 @@ exports.createResourceArchive = async (req,res,next) =>{
         }
 
         //success
-        let archive = await Resourcearchive.getResourcesByLevelTerm(level, term);
+        let archive = await Resourcearchive.getResourcesByLevelTerm(level, term,batchid);
         if (archive.length === 0) {
             await Resourcearchive.createDriveLink(batchid, level, term, link);
         } else {
