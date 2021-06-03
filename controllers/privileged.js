@@ -388,6 +388,8 @@ exports.getReportedPosts = async (req,res,next) => {
         for(j=0;j<validPostIDs.length;j++){
             let counter = await Report.getCounterofPost(validPostIDs[j]);
             let count = Object.values(counter);
+            let counter2 = await Answer.getCounterofAnswer(validPostIDs[j]);
+            let count2 = Object.values(counter2);
             let postDetails = await Post.getPostDetails(validPostIDs[j]);
             let userDetails = await User.getUserDetailsByUserID(postDetails.userID);
             let tagNames = await Post.getPostTags(validPostIDs[j]);
@@ -409,6 +411,7 @@ exports.getReportedPosts = async (req,res,next) => {
             payload.push({
                 postId : validPostIDs[j],
                 reportCount : count[0],
+                answerCount : count2[0],
                 owner : {
                     name : userDetails.Name,
                     studentId : userDetails.ID,

@@ -12,5 +12,9 @@ module.exports = class Answer{
     static async deleteAnswer(id){
         await db.execute(`delete from answer where ID=${id}`);
     }
+    static async getCounterofAnswer(postid){
+        let result = await db.execute(`SELECT COUNT (ID) FROM answer where PostID=${postid};`);
+        return result[0][0];
+    }
 
 };
