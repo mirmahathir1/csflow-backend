@@ -12,4 +12,5 @@ module.exports = class Answer{
     static async deleteAnswer(id){
         await db.execute(`delete from answer where ID=${id}`);
     }
+
 };

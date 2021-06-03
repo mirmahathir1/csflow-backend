@@ -35,4 +35,8 @@ module.exports = class Comment {
                           from comment
                           where ID = ${id}`);
     }
+    static async getCounterofComment(id){
+        let result = await db.execute(`SELECT COUNT (ID) FROM comment where AnswerID=${id};`);
+        return result[0][0];
+    }
 };

@@ -389,7 +389,7 @@ exports.getReportedPosts = async (req,res,next) => {
             let counter = await Report.getCounterofPost(validPostIDs[j]);
             let count = Object.values(counter);
             let postDetails = await Post.getPostDetails(validPostIDs[j]);
-            let userDetails = await User.getUserDetailsByUserID(postDetails.UserID);
+            let userDetails = await User.getUserDetailsByUserID(postDetails.userID);
             let tagNames = await Post.getPostTags(validPostIDs[j]);
             let k,Topic="",Book="";
             let customTags = [];
@@ -416,9 +416,9 @@ exports.getReportedPosts = async (req,res,next) => {
                     karma : userDetails.Karma
 
                 },
-                type : postDetails.Type,
-                createdAt : postDetails.Date,
-                vote : postDetails.UpvoteCount-postDetails.DownvoteCount,
+                type : postDetails.type,
+                createdAt : postDetails.date,
+                vote : postDetails.upvoteCount-postDetails.downvoteCount,
                 course : postDetails.courseName,
                 topic : Topic,
                 book : Book,
@@ -427,7 +427,7 @@ exports.getReportedPosts = async (req,res,next) => {
                     term : postDetails.term
                 },
                 customTag : customTags,
-                title : postDetails.Title
+                title : postDetails.title
             });
 
         }
@@ -533,12 +533,15 @@ exports.getReportedAnswers = async (req,res,next) => {
         for(j=0;j<validPostIDs.length;j++) {
             let counter = await Report.getCounterofAnswer(validAnswerIDs[j]);
             let count = Object.values(counter);
+            let counter2 = await Comment.getCounterofComment(validAnswerIDs[j]);
+            let count2 = Object.values(counter2);
             let answerDetails = await Answer.getAnswerDetails(validAnswerIDs[j])
             let postDetails = await Post.getPostDetails(validPostIDs[j]);
             let userDetails = await User.getUserDetailsByUserID(answerDetails.UserID);
             payload.push({
                 postId : validPostIDs[j],
                 answerId : validAnswerIDs[j],
+                commentCount : count2[0],
                 reportCount : count[0],
                 owner : {
                     name : userDetails.Name,
