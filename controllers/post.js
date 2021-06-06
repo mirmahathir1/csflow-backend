@@ -1,4 +1,5 @@
 const Post = require('../models/post');
+const Answer = require('../models/answer');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 const Tag = require('../models/tag');
@@ -20,6 +21,82 @@ const getUniqueIdentifier = () => {
         Math.ceil(Math.random() * 10000000000000000000000000).toString();
 
     return identifier.substring(0, 20);
+};
+
+const checkPostOwner = async (postId, ownerId) => {
+    const postExist = await Post.isPostExist(postId);
+    if (!postExist)
+        throw new ErrorHandler(400, 'Post not found.');
+
+    const isOwner = await Post.isPostOwner(postId, ownerId);
+    if (!isOwner)
+        throw new ErrorHandler(400, 'You don’t own this post');
+}
+
+const checkPostFields = async (post) => {
+    if (!(post.type.toLowerCase() === 'discussion' || post.type.toLowerCase() === 'question'))
+        throw new ErrorHandler(400, 'Invalid type');
+
+    if (!post.termFinal.level || typeof (post.termFinal.level) !== typeof (1))
+        throw new ErrorHandler(400, 'In term final object there must be a integer field named level');
+    if (!post.termFinal.term || typeof (post.termFinal.term) !== typeof (1))
+        throw new ErrorHandler(400, 'In term final object there must be a integer field named term');
+
+    if (post.termFinal.level < 1 || post.termFinal.level > 5)
+        throw new ErrorHandler(400, 'Invalid Level');
+    if (post.termFinal.term < 1 || post.termFinal.term > 2)
+        throw new ErrorHandler(400, 'Invalid Term');
+
+    post.customTag.forEach(tag => {
+        if (typeof (tag) !== typeof (""))
+            throw new ErrorHandler(400, 'In custom tag array there must be a string type element');
+    });
+
+
+    let exist;
+
+    if (post.course) {
+        exist = await Tag.isExist(post.course, 'course');
+        if (!exist)
+            throw new ErrorHandler(400, 'Course not found.');
+    }
+
+    if (post.topic) {
+        exist = await Tag.isExist(post.topic, 'topic');
+        if (!exist)
+            throw new ErrorHandler(400, 'Topic not found.');
+    }
+
+    if (post.book) {
+        exist = await Tag.isExist(post.book, 'book');
+        if (!exist)
+            throw new ErrorHandler(400, 'Book not found.');
+    }
+};
+
+const checkPostResources = async (post) => {
+    post.resources.forEach(resource => {
+        if (typeof (resource) !== typeof ({}))
+            throw new ErrorHandler(400, 'In resources array there must be a object type element');
+
+        if (!resource.link || typeof (resource.link) !== typeof (""))
+            throw new ErrorHandler(400, 'A resource must have a string field link.');
+
+        if (!resource.type || typeof (resource.type) !== typeof (""))
+            throw new ErrorHandler(400, 'A resource must have a string field type.');
+    });
+};
+
+const addPostTag = async (postId, post) => {
+    if (post.topic)
+        await Post.addPostTag(postId, post.topic);
+    if (post.book)
+        await Post.addPostTag(postId, post.book);
+    if (post.course)
+        await Post.addPostTag(postId, post.course);
+
+    for (const tag of post.customTag)
+        await Post.addPostTag(postId, tag);
 }
 
 exports.createPost = async (req, res, next) => {
@@ -29,59 +106,10 @@ exports.createPost = async (req, res, next) => {
         if (!errors.isEmpty())
             throw new ErrorHandler(400, errors);
 
-        if (!(req.body.type.toLowerCase() === 'discussion' || req.books.type.toLowerCase() === 'question'))
-            throw new ErrorHandler(400, 'Invalid type');
-
-        if (!req.body.termFinal.level || typeof (req.body.termFinal.level) !== typeof (1))
-            throw new ErrorHandler(400, 'In term final object there must be a integer field named level');
-        if (!req.body.termFinal.term || typeof (req.body.termFinal.term) !== typeof (1))
-            throw new ErrorHandler(400, 'In term final object there must be a integer field named term');
-
-        if (req.body.termFinal.level < 1 || req.body.termFinal.level > 5)
-            throw new ErrorHandler(400, 'Invalid Level');
-        if (req.body.termFinal.term < 1 || req.body.termFinal.term > 2)
-            throw new ErrorHandler(400, 'Invalid Term');
-
-        req.body.customTag.forEach(tag => {
-            if (typeof (tag) !== typeof (""))
-                throw new ErrorHandler(400, 'In custom tag array there must be a string type element');
-        });
-
-        req.body.resources.forEach(resource => {
-            if (typeof (resource) !== typeof ({}))
-                throw new ErrorHandler(400, 'In resources array there must be a object type element');
-
-            if (!resource.link || typeof (resource.link) !== typeof (""))
-                throw new ErrorHandler(400, 'A resource must have a string field link.');
-
-            if (!resource.type || typeof (resource.type) !== typeof (""))
-                throw new ErrorHandler(400, 'A resource must have a string field type.');
-        });
-
-        let exist;
-
-        if (req.body.course) {
-            exist = await Tag.isExist(req.body.course, 'course');
-            if (!exist)
-                throw new ErrorHandler(400, 'Course not found.');
-        }
-
-        if (req.body.topic) {
-            exist = await Tag.isExist(req.body.topic, 'topic');
-            if (!exist)
-                throw new ErrorHandler(400, 'Topic not found.');
-        }
-
-        if (req.body.book) {
-            exist = await Tag.isExist(req.body.book, 'book');
-            if (!exist)
-                throw new ErrorHandler(400, 'Book not found.');
-        }
+        await checkPostResources(req.body);
+        await checkPostFields(req.body);
 
         let user = res.locals.middlewareResponse.user;
-
-        // const date = dateTime.create().format('Y-m-d H:M:S').toString();
-        // console.log(date);
 
         const identifier = getUniqueIdentifier();
         // console.log(identifier);
@@ -96,12 +124,7 @@ exports.createPost = async (req, res, next) => {
         const postID = await Post.getPostIDByIdentifier(identifier);
         // console.log(postID);
 
-        await Post.addPostTag(postID, req.body.topic);
-        await Post.addPostTag(postID, req.body.book);
-        await Post.addPostTag(postID, req.body.course);
-
-        for (const tag of req.body.customTag)
-            await Post.addPostTag(postID, tag);
+        await addPostTag(postID, req.body);
 
         for (const resource of req.body.resources)
             await Post.addPostResource(postID, resource.link, resource.type);
@@ -114,7 +137,6 @@ exports.createPost = async (req, res, next) => {
     }
 };
 
-
 exports.getPost = async (req, res, next) => {
     try {
         let user = res.locals.middlewareResponse.user;
@@ -122,7 +144,7 @@ exports.getPost = async (req, res, next) => {
 
         // console.log(postId);
         const postDetails = await Post.getPostDetails(postId);
-        console.log(postDetails);
+        // console.log(postDetails);
 
         if (!postDetails)
             throw new ErrorHandler(400, 'Post not found.');
@@ -149,9 +171,9 @@ exports.getPost = async (req, res, next) => {
                 throw new ErrorHandler(400, 'Topic not found.');
         }
 
-        console.log(postDetails.date);
-        postDetails.date = dateTime.create(postDetails.date).getTime();
-        console.log(postDetails.date);
+        // console.log(postDetails.date);
+        postDetails.createdAt = dateTime.create(postDetails.createdAt).getTime();
+        // console.log(postDetails.date);
 
         const owner = await User.getUserDetailsByUserID(postDetails.userID);
         if (!owner)
@@ -186,14 +208,244 @@ exports.getPost = async (req, res, next) => {
             if (!owner)
                 throw new ErrorHandler(400, 'Comment Owner not found.');
             comment.owner = owner;
-
+            comment.isReported = (await Comment.isReport(comment.commentId, user.id)) != null;
             delete comment.ownerID;
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200,
-            "List of course’s fetched successfully", postDetails));
+            "Post fetched successfully", postDetails));
 
     } catch (e) {
         next(e);
     }
 };
+
+exports.getPostAnswer = async (req, res, next) => {
+    try {
+        let user = res.locals.middlewareResponse.user;
+        const postId = req.params.postId;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        // console.log(postId);
+        const answersDetails = await Answer.getAnswerDetailsByPostId(postId);
+        // console.log(answersDetails);
+
+        if (!answersDetails)
+            throw new ErrorHandler(400, 'Answers not found.');
+
+        console.log(answersDetails);
+
+        for (let answer of answersDetails) {
+            const owner = await User.getUserDetailsByUserID(answer.UserID);
+            if (!owner)
+                throw new ErrorHandler(400, 'Owner not found.');
+            delete answer.UserID;
+            answer.owner = owner;
+
+            answer.createdAt = dateTime.create(answer.createdAt).getTime();
+
+            answer.files = await Answer.getAnswerFiles(answer.answerId);
+
+            answer.isReported = (await Answer.isReport(answer.answerId, user.id)) != null;
+            answer.isFollowing = (await Answer.isFollow(answer.answerId, user.id)) != null;
+
+            answer.comments = await Comment.getCommentOfAnAnswer(answer.answerId);
+
+            for (const comment of answer.comments) {
+                comment.createdAt = dateTime.create(comment.createdAt).getTime();
+                const owner = await User.getUserDetailsByUserID(comment.ownerID);
+                if (!owner)
+                    throw new ErrorHandler(400, 'Comment Owner not found.');
+                comment.owner = owner;
+                comment.isReported = (await Comment.isReport(comment.commentId, user.id)) != null;
+                delete comment.ownerID;
+            }
+        }
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Answers fetched successfully", answersDetails));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.updatePost = async (req, res, next) => {
+    try {
+        // console.log(req.body);
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            throw new ErrorHandler(400, errors);
+
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        await checkPostOwner(postId, user.id);
+
+        await checkPostFields(req.body);
+
+        await Post.updatePost(postId, req.body.type,
+            req.body.title, req.body.description,
+            req.body.termFinal.level, req.body.termFinal.term,
+            req.body.course, req.body.book, req.body.topic);
+
+        await Post.deletePostTag(postId);
+        await addPostTag(postId, req.body);
+
+        let prevResources = await Post.getPostFiles(postId);
+        prevResources = JSON.parse(JSON.stringify(prevResources));
+        // console.log(prevResources);
+        // console.log(req.body.resources);
+        if (prevResources) {
+            for (const resource of prevResources) {
+                let found = false;
+                for (const newResource of req.body.resources) {
+                    if (newResource.link === resource.link && newResource.type === resource.type) {
+                        console.log("Found");
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    console.log("Deleting resource ", resource.link);
+                    await deleteImage(resource.link);
+                }
+            }
+        }
+
+        await Post.deletePostResource(postId);
+        for (const resource of req.body.resources)
+            await Post.addPostResource(postId, resource.link, resource.type);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Post updated successfully", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.deletePost = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        await checkPostOwner(postId, user.id);
+
+        await Post.deletePost(postId);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Post deleted successfully", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.addReport = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const isOwner = await Post.isPostOwner(postId, user.id);
+        if (isOwner)
+            throw new ErrorHandler(400, 'You can not add report to your own post.');
+
+        const alreadyReport = await Post.isReport(postId, user.id);
+        if (alreadyReport)
+            throw new ErrorHandler(400, 'You have already reported this post.');
+
+        await Post.addPostReport(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Post has been reported successfully.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.deleteReport = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const alreadyReport = await Post.isReport(postId, user.id);
+        if (!alreadyReport)
+            throw new ErrorHandler(400, 'You have not reported this post.');
+
+        await Post.deletePostReport(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Report about this post is deleted successfully.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.addFollow = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const isOwner = await Post.isPostOwner(postId, user.id);
+        if (isOwner)
+            throw new ErrorHandler(400, 'You can not follow to your own post.');
+
+        const alreadyFollow = await Post.isFollow(postId, user.id);
+        if (alreadyFollow)
+            throw new ErrorHandler(400, 'You have already followed this post.');
+
+        await Post.addPostFollow(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "You are now following this post.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.deleteFollow = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const alreadyFollow = await Post.isFollow(postId, user.id);
+        if (!alreadyFollow)
+            throw new ErrorHandler(400, 'You have not followed this post.');
+
+        await Post.deletePostFollow(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "You have unfollowed this post.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+
+
+

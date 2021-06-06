@@ -7,13 +7,17 @@ module.exports = class Post {
                                                 userID,
                                                 type,
                                                 title,
-                                                starredanswerid as acceptedAnswer,
-                                                cast(date as char) as date, level,
-                                             term, courseName as course,
-                                             book, topic,
-                                             upvoteCount, downvoteCount
+                                                starredanswerid    as acceptedAnswer,
+                                                cast(date as char) as createdAt,
+                                                level,
+                                                term,
+                                                courseName         as course,
+                                                book,
+                                                topic,
+                                                upvoteCount,
+                                                downvoteCount
                                          from post
-                                         where ID=${postid}`);
+                                         where ID = ${postid}`);
         return response[0][0];
     }
 
@@ -41,6 +45,7 @@ module.exports = class Post {
                             upvoteCount, downvoteCount,
                             level, term, courseName,
                             book, topic, identifier) {
+
         await db.execute(`insert into post(UserID, Type, Title,
                                            Description, Date, UpvoteCount, DownvoteCount,
                                            level, term, courseName, book, topic, identifier)
@@ -48,6 +53,21 @@ module.exports = class Post {
                                   '${description}', current_timestamp(), ${upvoteCount},
                                   ${downvoteCount}, ${level}, ${term},
                                   '${courseName}', '${book}', '${topic}', '${identifier}')`);
+    }
+
+    static async updatePost(postid, type, title, description,
+                            level, term, courseName,
+                            book, topic) {
+        await db.execute(`update post
+                          set Type        = '${type}',
+                              Title       = '${title}',
+                              Description = '${description}',
+                              level       = ${level},
+                              term        = ${term},
+                              courseName  = '${courseName}',
+                              book        = '${book}',
+                              topic       = '${topic}'
+                          where id = ${postid}`);
     }
 
     static async getPostIDByIdentifier(identifier) {
@@ -62,9 +82,48 @@ module.exports = class Post {
                           values (${postID}, '${tag}')`);
     }
 
+    static async deletePostTag(postID) {
+        await db.execute(`delete
+                          from posttag
+                          where postid = ${postID}`);
+    }
+
+    static async addPostReport(postID, userID) {
+        await db.execute(`insert into report (PostID, UserID)
+                          values (${postID}, ${userID})`);
+    }
+
+    static async deletePostReport(postID, userID) {
+        await db.execute(`delete
+                          from report
+                          where postid = ${postID}
+                            and userID = ${userID}
+                            and answerid is null
+                            and commentid is null`);
+    }
+
+    static async addPostFollow(postID, userID) {
+        await db.execute(`insert into follow (PostID, UserID)
+                          values (${postID}, ${userID})`);
+    }
+
+    static async deletePostFollow(postID, userID) {
+        await db.execute(`delete
+                          from follow
+                          where postid = ${postID}
+                            and userID = ${userID}
+                            and answerid is null`);
+    }
+
     static async addPostResource(postID, link, type) {
         await db.execute(`insert into resource(PostID, Link, Type)
                           values (${postID}, '${link}', '${type}')`);
+    }
+
+    static async deletePostResource(postID) {
+        await db.execute(`delete
+                          from resource
+                          where PostID = ${postID}`);
     }
 
     static async getPostFiles(postID) {
@@ -79,6 +138,7 @@ module.exports = class Post {
         const result = await db.execute(`select 1 as exist
                                          from follow
                                          where postid = ${postId}
+                                           and answerId is null
                                            and userid = ${userId}`);
         return result[0][0];
     }
@@ -88,8 +148,29 @@ module.exports = class Post {
                                          from report
                                          where postid = ${postId}
                                            and userid = ${userId}
-                                           and answerId is null 
+                                           and answerId is null
                                            and commentid is null`);
         return result[0][0];
+    }
+
+    static async isPostExist(postId) {
+        const result = await db.execute(`select 1 as exist
+                                         from post
+                                         where id = ${postId}`);
+        return result[0][0];
+    }
+
+    static async isPostOwner(postId, ownerId) {
+        const result = await db.execute(`select 1 as exist
+                                         from post
+                                         where id = ${postId}
+                                           and userid = ${ownerId}`);
+        return result[0][0];
+    }
+
+    static async deletePost(postID) {
+        await db.execute(`delete
+                          from post
+                          where id = ${postID}`);
     }
 };

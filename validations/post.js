@@ -2,7 +2,7 @@ const {body, param, header} = require('express-validator/check');
 
 const {isFieldExist, matchStringType, matchNumericType} = require('./common');
 
-exports.validateCreatePost = () => {
+exports.validatePost = () => {
     return [
         isFieldExist('type'),
         matchStringType('type'),
@@ -18,9 +18,6 @@ exports.validateCreatePost = () => {
 
         isFieldExist('topic'),
         matchStringType('topic'),
-
-        isFieldExist('book'),
-        matchStringType('book'),
 
         isFieldExist('termFinal'),
         body('termFinal', `'termFinal' must be object type`).isObject(),
