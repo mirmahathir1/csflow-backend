@@ -73,4 +73,53 @@ module.exports = class Comment {
                           values (${postId}, ${userId},
                                   '${description}', current_timestamp())`);
     }
+
+    static async isReport(commentId, userId) {
+        const result = await db.execute(`select 1 as exist
+                                         from report
+                                         where commentid = ${commentId}
+                                           and userid = ${userId}`);
+        return result[0][0];
+    }
+
+    static async isCommentExist(commentID) {
+        const result = await db.execute(`select 1 as exist
+                                         from comment
+                                         where id = ${commentID}`);
+        return result[0][0];
+    }
+
+    static async isCommentOwner(commentID, ownerId) {
+        const result = await db.execute(`select 1 as exist
+                                         from comment
+                                         where id = ${commentID}
+                                           and userid = ${ownerId}`);
+        return result[0][0];
+    }
+
+    static async updateComment(commentId, description) {
+        await db.execute(`update comment
+                          set Description = '${description}'
+                          where id = ${commentId}`);
+    }
+
+    static async deleteComment(commentID) {
+        await db.execute(`delete
+                          from comment
+                          where ID = ${commentID}`);
+    }
+
+
+    static async addCommentReport(commentID, userID) {
+        await db.execute(`insert into report (commentID, UserID)
+                          values (${commentID}, ${userID})`);
+    }
+
+    static async deleteCommentReport(commentID, userID) {
+        await db.execute(`delete
+                          from report
+                          where commentID = ${commentID}
+                            and userID = ${userID}`);
+    }
+
 };

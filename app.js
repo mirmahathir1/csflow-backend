@@ -20,6 +20,7 @@ const privilegedRoutes = require('./routes/privileged');
 const tagRoutes = require('./routes/tag');
 const postRoutes = require('./routes/post');
 const answerRoutes = require('./routes/answer');
+const commentRoutes = require('./routes/comment');
 const storageRoutes = require('./routes/storage');
 
 const {handleError} = require("./response/error");
@@ -31,6 +32,7 @@ app.use('/privileged', privilegedRoutes);
 app.use('/tag', tagRoutes);
 app.use('/post', postRoutes);
 app.use('/answer', answerRoutes);
+app.use('/comment', commentRoutes);
 app.use('/resources', storageRoutes);
 
 app.get('/', (req, res) => {
