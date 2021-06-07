@@ -26,8 +26,8 @@ module.exports = class Comment {
     }
 
     static async getCommentOfAPost(postId) {
-        let response = await db.execute(`select id as commentId,
-                                                userid as ownerID,
+        let response = await db.execute(`select id                 as commentId,
+                                                userid             as ownerID,
                                                 description,
                                                 cast(Date as char) as createdAt
                                          from comment
@@ -37,8 +37,8 @@ module.exports = class Comment {
     }
 
     static async getCommentOfAnAnswer(answerId) {
-        let response = await db.execute(`select id as commentId,
-                                                userid as ownerID,
+        let response = await db.execute(`select id                 as commentId,
+                                                userid             as ownerID,
                                                 description,
                                                 cast(Date as char) as createdAt
                                          from comment
@@ -65,5 +65,12 @@ module.exports = class Comment {
                                          where commentId = ${commentId}
                                            and userid = ${userId}`);
         return result[0][0];
+    }
+
+    static async createPostComment(postId, userId, description) {
+        await db.execute(`insert into comment (PostID, UserID,
+                                               description, date)
+                          values (${postId}, ${userId},
+                                  '${description}', current_timestamp())`);
     }
 };

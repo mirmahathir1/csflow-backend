@@ -23,6 +23,22 @@ const getUniqueIdentifier = () => {
     return identifier.substring(0, 20);
 };
 
+const checkAnswerResources = async (answer) => {
+    answer.files.forEach(resource => {
+        if (typeof (resource) !== typeof ({}))
+            throw new ErrorHandler(400, 'In resources array there must be a object type element');
+
+        if (!resource.link || typeof (resource.link) !== typeof (""))
+            throw new ErrorHandler(400, 'A resource must have a string field link.');
+
+        if (!resource.type || typeof (resource.type) !== typeof (""))
+            throw new ErrorHandler(400, 'A resource must have a string field type.');
+    });
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////
+
 const checkPostOwner = async (postId, ownerId) => {
     const postExist = await Post.isPostExist(postId);
     if (!postExist)
@@ -74,26 +90,6 @@ const checkPostFields = async (post) => {
     }
 };
 
-const checkResources = async (resources) => {
-    resources.forEach(resource => {
-        if (typeof (resource) !== typeof ({}))
-            throw new ErrorHandler(400, 'In resources array there must be a object type element');
-
-        if (!resource.link || typeof (resource.link) !== typeof (""))
-            throw new ErrorHandler(400, 'A resource must have a string field link.');
-
-        if (!resource.type || typeof (resource.type) !== typeof (""))
-            throw new ErrorHandler(400, 'A resource must have a string field type.');
-    });
-}
-
-const checkPostResources = async (post) => {
-    await checkResources(post.resources);
-};
-
-const checkAnswerResources = async (answer) => {
-    await checkResources(answer.files);
-};
 
 const addPostTag = async (postId, post) => {
     if (post.topic)
@@ -401,118 +397,6 @@ exports.deleteFollow = async (req, res, next) => {
     }
 };
 
-exports.getAnswer = async (req, res, next) => {
-    try {
-        const user = res.locals.middlewareResponse.user;
-        const postId = req.params.postId;
-
-        const postExist = await Post.isPostExist(postId);
-        if (!postExist)
-            throw new ErrorHandler(400, 'Post not found.');
-
-        // console.log(postId);
-        const answersDetails = await Answer.getAnswerDetailsByPostId(postId);
-        // console.log(answersDetails);
-
-        if (!answersDetails)
-            throw new ErrorHandler(400, 'Answers not found.');
-
-        console.log(answersDetails);
-
-        for (let answer of answersDetails) {
-            const owner = await User.getUserDetailsByUserID(answer.UserID);
-            if (!owner)
-                throw new ErrorHandler(400, 'Owner not found.');
-            delete answer.UserID;
-            answer.owner = owner;
-
-            answer.createdAt = dateTime.create(answer.createdAt).getTime();
-
-            answer.files = await Answer.getAnswerFiles(answer.answerId);
-
-            answer.isReported = (await Answer.isReport(answer.answerId, user.id)) != null;
-            answer.isFollowing = (await Answer.isFollow(answer.answerId, user.id)) != null;
-
-            answer.comments = await Comment.getCommentOfAnAnswer(answer.answerId);
-
-            for (const comment of answer.comments) {
-                comment.createdAt = dateTime.create(comment.createdAt).getTime();
-                const owner = await User.getUserDetailsByUserID(comment.ownerID);
-                if (!owner)
-                    throw new ErrorHandler(400, 'Comment Owner not found.');
-                comment.owner = owner;
-                comment.isReported = (await Comment.isReport(comment.commentId, user.id)) != null;
-                delete comment.ownerID;
-            }
-        }
-
-        return res.status(200).send(new SuccessResponse("OK", 200,
-            "Answers fetched successfully", answersDetails));
-
-    } catch (e) {
-        next(e);
-    }
-};
-
-exports.createAnswer = async (req, res, next) => {
-    try {
-        // console.log(req.body);
-        const errors = validationResult(req);
-        if (!errors.isEmpty())
-            throw new ErrorHandler(400, errors);
-
-        await checkAnswerResources(req.body);
-
-        const postId = req.params.postId;
-        const user = res.locals.middlewareResponse.user;
-
-        const postExist = await Post.isPostExist(postId);
-        if (!postExist)
-            throw new ErrorHandler(400, 'Post not found.');
-
-        const isQuestion = await Post.isQuestionTypePost(postId);
-        if (!isQuestion)
-            throw new ErrorHandler(400, 'This is not a question.');
 
 
-        const identifier = getUniqueIdentifier();
-        await Answer.createAnswer(postId, user.id,
-            req.body.description, identifier);
 
-        const answerID = await Answer.getAnswerIDByIdentifier(identifier);
-
-        for (const resource of req.body.files)
-            await Answer.addAnswerResource(postId, answerID,
-                resource.link, resource.type);
-
-        return res.status(200).send(new SuccessResponse("OK", 200,
-            "Answer posted successfully", null));
-
-    } catch (e) {
-        next(e);
-    }
-};
-
-exports.createComment = async (req, res, next) => {
-    try {
-        // console.log(req.body);
-        const errors = validationResult(req);
-        if (!errors.isEmpty())
-            throw new ErrorHandler(400, errors);
-
-        const postId = req.params.postId;
-        const user = res.locals.middlewareResponse.user;
-
-        const postExist = await Post.isPostExist(postId);
-        if (!postExist)
-            throw new ErrorHandler(400, 'Post not found.');
-
-        await Comment.createPostComment(postId, user.id, req.body.description);
-
-        return res.status(200).send(new SuccessResponse("OK", 200,
-            "Commented on post successfully", null));
-
-    } catch (e) {
-        next(e);
-    }
-};

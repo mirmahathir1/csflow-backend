@@ -19,6 +19,7 @@ const archiveRoutes = require('./routes/archive');
 const privilegedRoutes = require('./routes/privileged');
 const tagRoutes = require('./routes/tag');
 const postRoutes = require('./routes/post');
+// const answerRoutes = require('./routes/answer');
 const storageRoutes = require('./routes/storage');
 
 const {handleError} = require("./response/error");
@@ -29,6 +30,7 @@ app.use('/archive', archiveRoutes);
 app.use('/privileged', privilegedRoutes);
 app.use('/tag', tagRoutes);
 app.use('/post', postRoutes);
+// app.use('/answer', answerRoutes);
 app.use('/resources', storageRoutes);
 
 app.get('/', (req, res) => {

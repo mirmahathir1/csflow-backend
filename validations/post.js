@@ -29,3 +29,20 @@ exports.validatePost = () => {
         body('resources', `'resources' must be an array`).isArray(),
     ]
 };
+
+exports.validateAnswer = () => {
+    return [
+        isFieldExist('description'),
+        matchStringType('description'),
+
+        isFieldExist('files'),
+        body('files', `'files' must be an array`).isArray(),
+    ]
+};
+
+exports.validateComment = () => {
+    return [
+        isFieldExist('description'),
+        matchStringType('description'),
+    ]
+};

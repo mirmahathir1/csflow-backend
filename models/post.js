@@ -35,10 +35,10 @@ module.exports = class Post {
         return response[0];
     }
 
-    static async deletePost(postid) {
+    static async deletePost(postID) {
         await db.execute(`delete
                           from post
-                          where ID = ${postid}`);
+                          where ID = ${postID}`);
     }
 
     static async createPost(userid, type, title, description,
@@ -168,9 +168,11 @@ module.exports = class Post {
         return result[0][0];
     }
 
-    static async deletePost(postID) {
-        await db.execute(`delete
-                          from post
-                          where id = ${postID}`);
+    static async isQuestionTypePost(postID) {
+        const result = await db.execute(`select 1 as exist
+                                         from post
+                                         where id = ${postID}
+                                           and lower(type) = 'question'`);
+        return result[0][0];
     }
 };

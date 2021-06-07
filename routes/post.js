@@ -17,11 +17,6 @@ router.get('/:postId',
     postController.getPost,
 );
 
-router.get('/:postId/answer',
-    authenticate.handleAuthentication,
-    postController.getPostAnswer,
-);
-
 router.patch('/:postId',
     postValidators.validatePost(),
     authenticate.handleAuthentication,
@@ -51,6 +46,23 @@ router.post('/:postId/follow',
 router.delete('/:postId/follow',
     authenticate.handleAuthentication,
     postController.deleteFollow,
+);
+
+router.post('/:postId/answer',
+    postValidators.validateAnswer(),
+    authenticate.handleAuthentication,
+    postController.createAnswer,
+);
+
+router.get('/:postId/answer',
+    authenticate.handleAuthentication,
+    postController.getAnswer,
+);
+
+router.post('/:postId/comment',
+    postValidators.validateComment(),
+    authenticate.handleAuthentication,
+    postController.createComment,
 );
 
 module.exports = router;

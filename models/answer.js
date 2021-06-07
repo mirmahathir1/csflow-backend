@@ -9,14 +9,15 @@ module.exports = class Answer {
     }
 
     static async getAnswerDetailsByPostId(postId) {
-        let response = await db.execute(`select ID as answerId,
+        let response = await db.execute(`select ID                 as answerId,
                                                 PostID,
                                                 UserID,
                                                 Description,
                                                 cast(Date as char) as createdAt,
-                                             UpvoteCount, DownvoteCount
+                                                UpvoteCount,
+                                                DownvoteCount
                                          from answer
-                                         where postID=${postId}`);
+                                         where postID = ${postId}`);
         return response[0];
     }
 
@@ -66,6 +67,27 @@ module.exports = class Answer {
                                            and userid = ${userId}
                                            and commentid is null`);
         return result[0][0];
+    }
+
+    static async createAnswer(postId, userId, description, identifier) {
+        await db.execute(`insert into answer (PostID, identifier,
+                                              UserID, description, date,
+                                              upvotecount, downvotecount)
+                          values (${postId}, '${identifier}',
+                                  ${userId}, '${description}',
+                                  current_timestamp(), 0, 0)`);
+    }
+
+    static async getAnswerIDByIdentifier(identifier) {
+        let response = await db.execute(`select id
+                                         from answer
+                                         where identifier = '${identifier}'`);
+        return response[0][0].id;
+    }
+
+    static async addAnswerResource(postID, answerID, link, type) {
+        await db.execute(`insert into resource(PostID, answerID, Link, Type)
+                          values (${postID}, ${answerID}, '${link}', '${type}')`);
     }
 
 };
