@@ -4,10 +4,20 @@ const PostController = require('./post');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
 
+const MAX_POST_IN_A_SEARCH = 10;
 
 exports.getSearchResult = async (req, res, next) => {
     try {
         // console.log(req.body);
+
+        // console.log(req.query);
+        let skip = 0;
+        if (req.query.skip)
+            skip = req.query.skip;
+        let limit = MAX_POST_IN_A_SEARCH;
+        if (req.query.limit && limit > req.query.limit)
+            limit = req.query.limit;
+
 
         let condition = "";
         let condition2 = "";
@@ -16,29 +26,29 @@ exports.getSearchResult = async (req, res, next) => {
             condition += `courseName = '${req.body.courseId}'`;
         if (req.body.topic) {
             if (condition.length > 0)
-                condition += "or";
+                condition += " or ";
             condition += `topic = '${req.body.topic}'`;
         }
         if (req.body.book) {
             if (condition.length > 0)
-                condition += "or";
+                condition += " or ";
             condition += `book = '${req.body.book}'`;
         }
         if (req.body.level) {
             if (condition.length > 0)
-                condition += "or";
+                condition += " or ";
             condition += `level = ${req.body.level}`;
         }
         if (req.body.term) {
             if (condition.length > 0)
-                condition += "or";
+                condition += " or ";
             condition += `term = ${req.body.term}`;
         }
         if (req.body.text) {
             if (condition.length > 0)
-                condition += "or";
+                condition += " or ";
             condition += `title like '%${req.body.text}%'
-                          or description like '%${req.body.text}%'`;
+                           or  description like '%${req.body.text}%'`;
 
             condition2 = `name like '%${req.body.text}%'`;
         }
@@ -46,15 +56,16 @@ exports.getSearchResult = async (req, res, next) => {
         let payload;
         if (condition.length === 0 && condition2.length === 0)
             payload = [];
-        else
-        {
-            if(condition.length === 0)
+        else {
+            if (condition.length === 0)
                 condition = "0";
-            else if(condition2.length === 0)
+            else if (condition2.length === 0)
                 condition2 = "0";
 
             let posts = await Post.searchPost(condition, condition2);
             posts = JSON.parse(JSON.stringify(posts));
+            // console.log(posts);
+            posts = posts.slice(skip, skip + limit);
             // console.log(posts);
 
             const userId = res.locals.middlewareResponse.user.id;
