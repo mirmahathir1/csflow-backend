@@ -21,6 +21,7 @@ const tagRoutes = require('./routes/tag');
 const postRoutes = require('./routes/post');
 const answerRoutes = require('./routes/answer');
 const commentRoutes = require('./routes/comment');
+const searchRoutes = require('./routes/search');
 const storageRoutes = require('./routes/storage');
 
 const {handleError} = require("./response/error");
@@ -33,38 +34,31 @@ app.use('/tag', tagRoutes);
 app.use('/post', postRoutes);
 app.use('/answer', answerRoutes);
 app.use('/comment', commentRoutes);
+app.use('/search', searchRoutes);
 app.use('/resources', storageRoutes);
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.send('Hello World!');
 })
 
-const routeNotFoundMessage = {
-    "status": "ERROR",
-    "statusCode": 400,
-    "message": "Route not found",
-    "payload": null
+const routeNotFound = (req, res, next) => {
+    return res.status(404).send({
+        "status": "ERROR",
+        "statusCode": 400,
+        "message": "Route not found",
+        "payload": null
+    });
 };
 
-app.get("*", (req, res) => {
-    res.status(404).send(routeNotFoundMessage);
-});
+app.get("*", routeNotFound);
 
-app.post("*", (req, res) => {
-    res.status(404).send(routeNotFoundMessage);
-});
+app.post("*", routeNotFound);
 
-app.patch("*", (req, res) => {
-    res.status(404).send(routeNotFoundMessage);
-});
+app.patch("*", routeNotFound);
 
-app.put("*", (req, res) => {
-    res.status(404).send(routeNotFoundMessage);
-});
+app.put("*", routeNotFound);
 
-app.delete("*", (req, res) => {
-    res.status(404).send(routeNotFoundMessage);
-});
+app.delete("*", routeNotFound);
 
 app.use((err, req, res, next) => {
     handleError(err, res);

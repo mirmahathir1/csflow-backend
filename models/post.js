@@ -176,4 +176,15 @@ module.exports = class Post {
                                            and lower(type) = 'question'`);
         return result[0][0];
     }
+
+    static async searchPost(condition, condition2) {
+        let response = await db.execute(`select id
+                                         from post
+                                         where ${condition}
+                                         union
+                                         select postid as id
+                                         from posttag
+                                         where ${condition2}`);
+        return response[0];
+    }
 };

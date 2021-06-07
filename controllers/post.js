@@ -145,80 +145,86 @@ exports.createPost = async (req, res, next) => {
     }
 };
 
+exports.fetchPost = async (postId, userId) => {
+    // console.log(postId);
+    const postDetails = await Post.getPostDetails(postId);
+    // console.log(postDetails);
+
+    if (!postDetails)
+        throw new ErrorHandler(400, 'Post not found.');
+
+    if (!(postDetails.type.toLowerCase() === 'discussion' || postDetails.type.toLowerCase() === 'question'))
+        throw new ErrorHandler(400, 'Invalid post type');
+
+    let exist;
+    if (postDetails.course) {
+        exist = await Tag.isExist(postDetails.course, 'course');
+        if (!exist)
+            throw new ErrorHandler(400, 'Course not found.');
+    }
+
+    if (postDetails.book) {
+        exist = await Tag.isExist(postDetails.book, 'book');
+        if (!exist)
+            throw new ErrorHandler(400, 'Book not found.');
+    }
+
+    if (postDetails.topic) {
+        exist = await Tag.isExist(postDetails.topic, 'topic');
+        if (!exist)
+            throw new ErrorHandler(400, 'Topic not found.');
+    }
+
+    // console.log(postDetails.date);
+    postDetails.createdAt = dateTime.create(postDetails.createdAt).getTime();
+    // console.log(postDetails.date);
+
+    const owner = await User.getUserDetailsByUserID(postDetails.userID);
+    if (!owner)
+        throw new ErrorHandler(400, 'Owner not found.');
+
+    delete postDetails.userID;
+    postDetails.owner = owner;
+
+    postDetails.termFinal = {
+        level: postDetails.level,
+        term: postDetails.term
+    };
+    delete postDetails.level;
+    delete postDetails.term;
+
+    let tags = await Post.getPostTags(postId);
+    tags = tags.filter(tag => tag.Name !== postDetails.course &&
+        tag.Name !== postDetails.book &&
+        tag.Name !== postDetails.topic);
+    postDetails.customTag = tags.map(t => t.Name);
+
+    postDetails.files = await Post.getPostFiles(postId);
+
+    postDetails.isReported = (await Post.isReport(postId, userId)) != null;
+    postDetails.isFollowing = (await Post.isFollow(postId, userId)) != null;
+
+    postDetails.comments = await Comment.getCommentOfAPost(postId);
+
+    for (const comment of postDetails.comments) {
+        comment.createdAt = dateTime.create(comment.createdAt).getTime();
+        const owner = await User.getUserDetailsByUserID(comment.ownerID);
+        if (!owner)
+            throw new ErrorHandler(400, 'Comment Owner not found.');
+        comment.owner = owner;
+        comment.isReported = (await Comment.isReport(comment.commentId, userId)) != null;
+        delete comment.ownerID;
+    }
+
+    return postDetails;
+}
+
 exports.getPost = async (req, res, next) => {
     try {
         let user = res.locals.middlewareResponse.user;
         const postId = req.params.postId;
 
-        // console.log(postId);
-        const postDetails = await Post.getPostDetails(postId);
-        // console.log(postDetails);
-
-        if (!postDetails)
-            throw new ErrorHandler(400, 'Post not found.');
-
-        if (!(postDetails.type.toLowerCase() === 'discussion' || postDetails.type.toLowerCase() === 'question'))
-            throw new ErrorHandler(400, 'Invalid post type');
-
-        let exist;
-        if (postDetails.course) {
-            exist = await Tag.isExist(postDetails.course, 'course');
-            if (!exist)
-                throw new ErrorHandler(400, 'Course not found.');
-        }
-
-        if (postDetails.book) {
-            exist = await Tag.isExist(postDetails.book, 'book');
-            if (!exist)
-                throw new ErrorHandler(400, 'Book not found.');
-        }
-
-        if (postDetails.topic) {
-            exist = await Tag.isExist(postDetails.topic, 'topic');
-            if (!exist)
-                throw new ErrorHandler(400, 'Topic not found.');
-        }
-
-        // console.log(postDetails.date);
-        postDetails.createdAt = dateTime.create(postDetails.createdAt).getTime();
-        // console.log(postDetails.date);
-
-        const owner = await User.getUserDetailsByUserID(postDetails.userID);
-        if (!owner)
-            throw new ErrorHandler(400, 'Owner not found.');
-
-        delete postDetails.userID;
-        postDetails.owner = owner;
-
-        postDetails.termFinal = {
-            level: postDetails.level,
-            term: postDetails.term
-        };
-        delete postDetails.level;
-        delete postDetails.term;
-
-        let tags = await Post.getPostTags(postId);
-        tags = tags.filter(tag => tag.Name !== postDetails.course &&
-            tag.Name !== postDetails.book &&
-            tag.Name !== postDetails.topic);
-        postDetails.customTag = tags.map(t => t.Name);
-
-        postDetails.files = await Post.getPostFiles(postId);
-
-        postDetails.isReported = (await Post.isReport(postId, user.id)) != null;
-        postDetails.isFollowing = (await Post.isFollow(postId, user.id)) != null;
-
-        postDetails.comments = await Comment.getCommentOfAPost(postId);
-
-        for (const comment of postDetails.comments) {
-            comment.createdAt = dateTime.create(comment.createdAt).getTime();
-            const owner = await User.getUserDetailsByUserID(comment.ownerID);
-            if (!owner)
-                throw new ErrorHandler(400, 'Comment Owner not found.');
-            comment.owner = owner;
-            comment.isReported = (await Comment.isReport(comment.commentId, user.id)) != null;
-            delete comment.ownerID;
-        }
+        const postDetails = await this.fetchPost(postId, user.id);
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Post fetched successfully", postDetails));
