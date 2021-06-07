@@ -123,7 +123,8 @@ module.exports = class Post {
     static async deletePostResource(postID) {
         await db.execute(`delete
                           from resource
-                          where PostID = ${postID}`);
+                          where PostID = ${postID}
+                            and answerId is null`);
     }
 
     static async getPostFiles(postID) {

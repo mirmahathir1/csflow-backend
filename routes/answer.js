@@ -6,44 +6,33 @@ const answerValidators = require('../validations/answer');
 
 const authenticate = require('../middlewares/authenticate');
 
-router.post('/',
-    // answerValidators.validateAnswer(),
+router.patch('/:answerId',
+    answerValidators.validateAnswer(),
     authenticate.handleAuthentication,
-    answerController.createAnswer,
+    answerController.updateAnswer,
 );
 
-router.get('/',
+router.delete('/:answerId',
     authenticate.handleAuthentication,
-    answerController.getAnswer,
+    answerController.deleteAnswer,
 );
 
-router.patch('/:postId',
-    // answerValidators.validatePost(),
-    authenticate.handleAuthentication,
-    answerController.updatePost,
-);
-
-router.delete('/:postId',
-    authenticate.handleAuthentication,
-    answerController.deletePost,
-);
-
-router.post('/:postId/report',
+router.post('/:answerId/report',
     authenticate.handleAuthentication,
     answerController.addReport,
 );
 
-router.delete('/:postId/report',
+router.delete('/:answerId/report',
     authenticate.handleAuthentication,
     answerController.deleteReport,
 );
 
-router.post('/:postId/follow',
+router.post('/:answerId/follow',
     authenticate.handleAuthentication,
     answerController.addFollow,
 );
 
-router.delete('/:postId/follow',
+router.delete('/:answerId/follow',
     authenticate.handleAuthentication,
     answerController.deleteFollow,
 );

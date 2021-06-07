@@ -482,7 +482,7 @@ exports.createAnswer = async (req, res, next) => {
         const answerID = await Answer.getAnswerIDByIdentifier(identifier);
 
         for (const resource of req.body.files)
-            await Answer.addAnswerResource(postId, answerID,
+            await Answer.addAnswerResource(answerID,
                 resource.link, resource.type);
 
         return res.status(200).send(new SuccessResponse("OK", 200,

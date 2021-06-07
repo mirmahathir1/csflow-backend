@@ -85,9 +85,68 @@ module.exports = class Answer {
         return response[0][0].id;
     }
 
-    static async addAnswerResource(postID, answerID, link, type) {
-        await db.execute(`insert into resource(PostID, answerID, Link, Type)
-                          values (${postID}, ${answerID}, '${link}', '${type}')`);
+    static async addAnswerResource(answerID, link, type) {
+        await db.execute(`insert into resource(answerID, Link, Type)
+                          values (${answerID}, '${link}', '${type}')`);
+    }
+
+    static async isAnswerExist(answerID) {
+        const result = await db.execute(`select 1 as exist
+                                         from answer
+                                         where id = ${answerID}`);
+        return result[0][0];
+    }
+
+    static async isAnswerOwner(answerID, ownerId) {
+        const result = await db.execute(`select 1 as exist
+                                         from answer
+                                         where id = ${answerID}
+                                           and userid = ${ownerId}`);
+        return result[0][0];
+    }
+
+    static async updateAnswer(answerId, description) {
+        await db.execute(`update answer
+                          set Description = '${description}'
+                          where id = ${answerId}`);
+    }
+
+    static async deleteAnswerResource(answerID) {
+        await db.execute(`delete
+                          from resource
+                          where answerID = ${answerID}`);
+    }
+
+    static async deleteAnswer(answerID) {
+        await db.execute(`delete
+                          from answer
+                          where ID = ${answerID}`);
+    }
+
+
+    static async addAnswerReport(answerID, userID) {
+        await db.execute(`insert into report (answerID, UserID)
+                          values (${answerID}, ${userID})`);
+    }
+
+    static async deleteAnswerReport(answerID, userID) {
+        await db.execute(`delete
+                          from report
+                          where answerID = ${answerID}
+                            and userID = ${userID}
+                            and commentid is null`);
+    }
+
+    static async addAnswerFollow(answerID, userID) {
+        await db.execute(`insert into follow (answerID, UserID)
+                          values (${answerID}, ${userID})`);
+    }
+
+    static async deleteAnswerFollow(answerID, userID) {
+        await db.execute(`delete
+                          from follow
+                          where answerID = ${answerID}
+                            and userID = ${userID}`);
     }
 
 };
