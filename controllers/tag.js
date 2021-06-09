@@ -17,18 +17,23 @@ exports.controlTagRequest = async (req, res, next) => {
         const course = req.body.course;
 
         if (!(type.toLowerCase() === "book" || type.toLowerCase()() === "topic"))
-            return res.status(404).send(new ErrorHandler(404, "Invalid tag type"))
+            return res.status(404).send(new ErrorHandler(404, "Invalid tag type"));
 
         const courseTag = await Tag.findCourseIDByName(course);
 
         if (!courseTag || courseTag.id.toString().length === 0)
-            return res.status(404).send(new ErrorHandler(404, "Course not found"))
+            return res.status(404).send(new ErrorHandler(404, "Course not found"));
 
-        // console.log(courseTag);
-        let user = res.locals.middlewareResponse.user;
-        if (!user)
-            throw new ErrorHandler(404, "User not found");
+        const isTagExist = await Tag.isExist(req.body.name, req.body.type);
+        if(isTagExist)
+            return res.status(404).send(new ErrorHandler(404, "Tag already exist."));
 
+        const isRequestedTagExist = await Tag.isRequestedTagExist(req.body.name, req.body.type);
+        if(isRequestedTagExist)
+            return res.status(404).send(new ErrorHandler(404, "Tag already requested."));
+
+
+        const user = res.locals.middlewareResponse.user;
         await Tag.addRequestedTag(user.id, courseTag.id, type.toLowerCase(), name);
 
         return res.status(200).send(new SuccessResponse("OK", 200, "New tag request successful", null));

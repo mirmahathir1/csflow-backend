@@ -117,6 +117,22 @@ module.exports = class Tag {
         return result[0][0];
     }
 
+    static async isTagExist(name, type) {
+        const result = await db.execute(`select 1
+                                         from predefinedtag
+                                         where Name = '${name}'
+                                           and Type = '${type}'`);
+        return result[0][0];
+    }
+
+    static async isRequestedTagExist(name, type) {
+        const result = await db.execute(`select 1
+                                         from requestedtag
+                                         where Name = '${name}'
+                                           and Type = '${type}'`);
+        return result[0][0];
+    }
+
     static async addRequestedTag(requesterID, courseTagID, type, name) {
         await db.execute(`insert into requestedtag(RequesterID, CourseTagID, Type, Name)
                           values (${requesterID}, ${courseTagID}, '${type}', '${name}')`);
