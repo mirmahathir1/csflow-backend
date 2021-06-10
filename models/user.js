@@ -20,7 +20,9 @@ module.exports = class User {
     static fetchAll() {
         return db.execute('SELECT * FROM user;');
     }
-
+    static async deleteUser(id){
+        return db.execute(`delete from user where ID=${id}`);
+    }
     static async findById(id) {
         let resultRaw = await db.execute(`SELECT *
                                           FROM user
@@ -184,6 +186,11 @@ module.exports = class User {
 
         return result[0][0];
     }
+    static async isAdmin(userid){
+        let result = await db.execute(`SELECT isAdmin as ADMIN FROM user WHERE ID=${userid}`)
+
+        return result[0][0];
+    }
     static async findLevelTerm(userid){
         let response = await db.execute(`select Level,Term from user where ID=${userid}`);
         return response[0][0];
@@ -191,6 +198,14 @@ module.exports = class User {
     static async isValidLevelTerm(level,term){
         let response = await db.execute(`select ID from user where Level = ${level} AND Term = ${term};`);
         return response[0];
+    }
+    static async updateLevelTerm(userid,level,term){
+        await db.execute(`update user set Level = ${level}, Term = ${term} where ID=${userid};`);
+
+    }
+    static async updateCR(userid,iscr){
+        await db.execute(`update user set IsCR = ${iscr} where ID=${userid};`);
+
     }
      static async addUser(user) {
         return db.execute(`INSERT INTO user(id, batchID, name,

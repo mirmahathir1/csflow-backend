@@ -41,4 +41,20 @@ module.exports = class Coursedetails {
         await db.execute(`update coursedetail set CourseNo='${name}'
                         where CourseTagID=${id}`);
     }
+    static async fetchAllCourse(){
+        let result = await db.execute(`SELECT DISTINCT CourseNo as courseId,Title as title,Level as level,Term as term  from coursedetail`);
+        return result[0];
+    }
+    static async deleteCourse(courseNumber){
+        await db.execute(`delete from coursedetail 
+                        WHERE CourseNo LIKE '${courseNumber}'`);
+    }
+    static async createCourse(courseId,title,level,term,batchId,tagId){
+        await db.execute(`insert into coursedetail(CourseNo,Title,Level,Term,CourseTagID,BatchID) 
+                    values('${courseId}','${title}',${level},${term},${tagId},${batchId})`);
+    }
+    static async updateCourse(courseId,level,term,title){
+        await db.execute(`update coursedetail set Title='${title}',Level=${level},Term=${term}
+                        where CourseNo LIKE '${courseId}'`);
+    }
 };

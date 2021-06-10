@@ -26,6 +26,21 @@ exports.handlePrivilegedUser = async(req,res,next) => {
         return res.status(500).send(new ErrorHandler(500, e.message));
     }
 };
+exports.handleAdmin = async(req,res,next) => {
+    try{
+        let user = res.locals.middlewareResponse.user;
+        let userid = user.id;
+        let isAdmin = await User.isAdmin(userid);
+
+        if(isAdmin.ADMIN !== 1){
+            return res.status(401).send(new ErrorHandler(401, "You are not authorized to access this route",null));
+        }
+        return next();
+    }
+    catch (e) {
+        return res.status(500).send(new ErrorHandler(500, e.message));
+    }
+};
 exports.handlePOSTLogIn = async (req, res, next) => {
     try {
         const errors = validationResult(req);
