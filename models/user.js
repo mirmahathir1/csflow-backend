@@ -15,6 +15,7 @@ module.exports = class User {
         this.term = user.Term;
         this.session = user.Session;
         this.isCR = user.IsCR;
+        this.isAdmin = user.isAdmin;
     }
 
     static fetchAll() {

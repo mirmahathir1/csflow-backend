@@ -420,9 +420,9 @@ exports.getReportedPosts = async (req,res,next) => {
 
                 },
                 type : postDetails.type,
-                createdAt : postDetails.date,
+                createdAt : postDetails.createdAt,
                 vote : postDetails.upvoteCount-postDetails.downvoteCount,
-                course : postDetails.courseName,
+                course : postDetails.course,
                 topic : Topic,
                 book : Book,
                 termFinal : {
