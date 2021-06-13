@@ -247,11 +247,14 @@ exports.updateCourse = async (req,res,next) => {
         let term = req.body.term;
         let title = req.body.title;
         let newCourse = req.body.courseId;
-
-        let previous = await Coursedetails.getCourseID(newCourse);
-        if(previous.length!==0){
-            throw new ErrorHandler(404, "courseId already exists", null);
+        let newCourseNo = newCourse.split(" ")[1];
+        if(oldCourse!=newCourseNo){
+            let previous = await Coursedetails.getCourseID(newCourse);
+            if(previous.length!==0){
+                throw new ErrorHandler(404, "courseId already exists", null);
+            }
         }
+
 
         if(level < 1 || level > 4 || term < 1 || term > 2){
             throw new ErrorHandler(404, "Invalid level/ term", null);
