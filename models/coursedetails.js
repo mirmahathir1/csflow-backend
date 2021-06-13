@@ -49,12 +49,12 @@ module.exports = class Coursedetails {
         await db.execute(`delete from coursedetail 
                         WHERE CourseNo LIKE '${courseNumber}'`);
     }
-    static async createCourse(courseId,title,level,term,batchId,tagId){
+    static async createCourse(courseId,title,level,term,tagId,batchid){
         await db.execute(`insert into coursedetail(CourseNo,Title,Level,Term,CourseTagID,BatchID) 
-                    values('${courseId}','${title}',${level},${term},${tagId},${batchId})`);
+                    values('${courseId}','${title}',${level},${term},${tagId},${batchid})`);
     }
-    static async updateCourse(courseId,level,term,title){
-        await db.execute(`update coursedetail set Title='${title}',Level=${level},Term=${term}
+    static async updateCourse(courseId,level,term,title,newCourse){
+        await db.execute(`update coursedetail set Title='${title}',Level=${level},Term=${term},CourseNo='${newCourse}'
                         where CourseNo LIKE '${courseId}'`);
     }
 };

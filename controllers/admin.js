@@ -210,7 +210,8 @@ exports.createCourse = async (req,res,next) => {
         let level = req.body.level;
         let term = req.body.term;
         let title = req.body.title;
-        let batch = req.body.batch;
+        let batch = await Batch.getBatches();
+        let k;
         if(level < 1 || level > 4 || term < 1 || term > 2){
             throw new ErrorHandler(404, "Invalid level/ term", null);
         }
@@ -219,7 +220,10 @@ exports.createCourse = async (req,res,next) => {
         let count = Object.values(row);
         let tagId = count[0] + 1;
         await Tag.addTag(tagId,'course',title);
-        await Coursedetails.createCourse(courseId,title,level,term,batch,tagId);
+        for(k=0;k<batch.length;k++){
+            await Coursedetails.createCourse(courseId,title,level,term,tagId,batch[k].ID);
+        }
+
         return res.status(200).send(new SuccessResponse("OK", 200, "Course creation successful", null));
     } catch (e) {
         next(e);
@@ -233,6 +237,7 @@ exports.updateCourse = async (req,res,next) => {
         }
 
         let courseArray = req.params.courseId.split("-");
+        let oldCourse = courseArray[1];
         let courseNumber = courseArray.join(" ");
         let courseID = await Coursedetails.getCourseID(courseNumber);
         if(courseID.length===0){
@@ -241,13 +246,22 @@ exports.updateCourse = async (req,res,next) => {
         let level = req.body.level;
         let term = req.body.term;
         let title = req.body.title;
+        let newCourse = req.body.courseId;
+        let newCourseNo = newCourse.split(" ")[1];
+        if(oldCourse!=newCourseNo){
+            let previous = await Coursedetails.getCourseID(newCourse);
+            if(previous.length!==0){
+                throw new ErrorHandler(404, "courseId already exists", null);
+            }
+        }
+
 
         if(level < 1 || level > 4 || term < 1 || term > 2){
             throw new ErrorHandler(404, "Invalid level/ term", null);
         }
 
         await Tag.updateTags(courseID[0].CourseTagID,'course',title);
-        await Coursedetails.updateCourse(courseNumber,level,term,title);
+        await Coursedetails.updateCourse(courseNumber,level,term,title,newCourse);
         return res.status(200).send(new SuccessResponse("OK", 200, "Course updated successfully", null));
     } catch (e) {
         next(e);
