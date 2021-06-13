@@ -13,47 +13,58 @@ exports.getSearchResult = async (req, res, next) => {
         let condition = "";
         let condition2 = "";
 
-        if (req.body.courseId) {
-            condition += `courseName = '${req.body.courseId}'`;
-            condition2 += `name = '${req.body.courseId}'`;
+
+
+        let request = req.query;
+        // let request = req.body;
+
+        request.level = parseInt(request.level+"");
+        request.term = parseInt(request.term+"");
+        //
+        // console.log(req.body)
+        console.log(request)
+
+        if (request.courseId) {
+            condition += `courseName = '${request.courseId}'`;
+            condition2 += `name = '${request.courseId}'`;
         }
-        if (req.body.topic) {
+        if (request.topic) {
             if (condition.length > 0)
                 condition += " or ";
-            condition += `topic = '${req.body.topic}'`;
+            condition += `topic = '${request.topic}'`;
 
             if (condition2.length > 0)
                 condition2 += " or ";
-            condition2 += `name = '${req.body.topic}'`;
+            condition2 += `name = '${request.topic}'`;
         }
-        if (req.body.book) {
+        if (request.book) {
             if (condition.length > 0)
                 condition += " or ";
-            condition += `book = '${req.body.book}'`;
+            condition += `book = '${request.book}'`;
 
             if (condition2.length > 0)
                 condition2 += " or ";
-            condition2 += `name = '${req.body.book}'`;
+            condition2 += `name = '${request.book}'`;
         }
-        if (req.body.level) {
+        if (request.level) {
             if (condition.length > 0)
                 condition += " or ";
-            condition += `level = ${req.body.level}`;
+            condition += `level = ${request.level}`;
         }
-        if (req.body.term) {
+        if (request.term) {
             if (condition.length > 0)
                 condition += " or ";
-            condition += `term = ${req.body.term}`;
+            condition += `term = ${request.term}`;
         }
-        if (req.body.text) {
+        if (request.text) {
             if (condition.length > 0)
                 condition += " or ";
-            condition += `title like '%${req.body.text}%'
-                           or  description like '%${req.body.text}%'`;
+            condition += `title like '%${request.text}%'
+                           or  description like '%${request.text}%'`;
 
             if (condition2.length > 0)
                 condition2 += " or ";
-            condition2 += `name like '%${req.body.text}%'`;
+            condition2 += `name like '%${request.text}%'`;
         }
 
         let payload;
