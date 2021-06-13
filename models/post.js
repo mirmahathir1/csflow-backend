@@ -214,4 +214,12 @@ module.exports = class Post {
                                          order by upvotecount desc`);
         return response[0];
     }
+
+    static async userPost(userId) {
+        let response = await db.execute(`select id
+                                         from post
+                                         where userid = ${userId}
+                                         order by upvotecount desc`);
+        return response[0];
+    }
 };
