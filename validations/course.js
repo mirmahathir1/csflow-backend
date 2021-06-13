@@ -9,8 +9,8 @@ exports.validateDetails = () => {
         isFieldExist('title'),
         matchStringType('title'),
         isFieldExist('level'),
-        isFieldExist('term'),
-        isFieldExist('batch')
+        isFieldExist('term')
+
     ]
 };
 
