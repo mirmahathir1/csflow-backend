@@ -219,6 +219,15 @@ exports.fetchPost = async (postId, userId) => {
     return postDetails;
 }
 
+exports.fetchPosts = async (posts, skip, limit, userId) => {
+    posts = JSON.parse(JSON.stringify(posts));
+    posts = posts.slice(skip, skip + limit);
+    let promises = [];
+    for (let post of posts)
+        promises.push(this.fetchPost(post.id, userId));
+    return await Promise.all(promises);
+}
+
 exports.getPost = async (req, res, next) => {
     try {
         let user = res.locals.middlewareResponse.user;

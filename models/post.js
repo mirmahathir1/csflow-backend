@@ -187,4 +187,31 @@ module.exports = class Post {
                                          where ${condition2}`);
         return response[0];
     }
+
+    static async topPost() {
+        let response = await db.execute(`select id
+                                         from post
+                                         order by upvotecount desc`);
+        return response[0];
+    }
+
+    static async relevantPost(level, term) {
+        let response = await db.execute(`select id
+                                         from post
+                                         where level = ${level}
+                                           and term = ${term}
+                                         order by upvotecount desc`);
+        return response[0];
+    }
+
+    static async unansweredPost() {
+        let response = await db.execute(`select id
+                                         from post
+                                         where id in (
+                                             select distinct postid
+                                             from answer
+                                         )
+                                         order by upvotecount desc`);
+        return response[0];
+    }
 };
