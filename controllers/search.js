@@ -1,19 +1,14 @@
 const Post = require('../models/post');
+const User = require('../models/user');
 const PostController = require('./post');
 
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
 
-const MAX_POST_IN_A_SEARCH = 10;
-
 exports.getSearchResult = async (req, res, next) => {
     try {
-        let skip = 0;
-        if (req.query.skip)
-            skip = req.query.skip;
-        let limit = MAX_POST_IN_A_SEARCH;
-        if (req.query.limit && limit > req.query.limit)
-            limit = req.query.limit;
+        const skip = res.locals.middlewareResponse.skip;
+        const limit = res.locals.middlewareResponse.limit;
 
         let condition = "";
         let condition2 = "";
@@ -70,23 +65,98 @@ exports.getSearchResult = async (req, res, next) => {
             else if (condition2.length === 0)
                 condition2 = "0";
 
-            let posts = await Post.searchPost(condition, condition2);
-            posts = JSON.parse(JSON.stringify(posts));
-            // console.log(posts);
-            posts = posts.slice(skip, skip + limit);
-            // console.log(posts);
-
             const userId = res.locals.middlewareResponse.user.id;
-            let promises = [];
-            for (let post of posts)
-                promises.push(PostController.fetchPost(post.id, userId));
 
-            payload = await Promise.all(promises);
+            let posts = await Post.searchPost(condition, condition2);
+            payload = await PostController.fetchPosts(posts, skip, limit, userId);
             // console.log(payload);
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Search results fetched successfully", payload));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.getTopPost = async (req, res, next) => {
+    try {
+        const skip = res.locals.middlewareResponse.skip;
+        const limit = res.locals.middlewareResponse.limit;
+
+        const userId = res.locals.middlewareResponse.user.id;
+
+        let posts = await Post.topPost();
+        const payload = await PostController.fetchPosts(posts, skip, limit, userId);
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Top posts fetched successfully", payload));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.getRelevantPost = async (req, res, next) => {
+    try {
+        const skip = res.locals.middlewareResponse.skip;
+        const limit = res.locals.middlewareResponse.limit;
+
+        const user = res.locals.middlewareResponse.user;
+
+        let posts = await Post.relevantPost(user.level, user.term);
+        const payload = await PostController.fetchPosts(posts, skip, limit, user.id);
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Relevant posts fetched successfully", payload));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.getUnansweredPost = async (req, res, next) => {
+    try {
+        const skip = res.locals.middlewareResponse.skip;
+        const limit = res.locals.middlewareResponse.limit;
+
+        const user = res.locals.middlewareResponse.user;
+
+        let posts = await Post.unansweredPost();
+        const payload = await PostController.fetchPosts(posts, skip, limit, user.id);
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Unanswered posts fetched successfully", payload));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.getTopUser = async (req, res, next) => {
+    try {
+        const skip = res.locals.middlewareResponse.skip;
+        const limit = res.locals.middlewareResponse.limit;
+
+        let users = await User.getTopUser();
+
+        users = JSON.parse(JSON.stringify(users));
+        users = users.slice(skip, skip + limit);
+
+        let payload = [];
+        for (let u of users){
+            let user = await User.findById(u.id);
+            if (!user)
+                throw new ErrorHandler(404, "User not found");
+
+            const statistics = await user.getUserStatistics();
+            user = {
+                ...user,
+                ...statistics,
+            };
+            payload.push(user);
+        }
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "List of sorted user's fetched successfully", payload));
 
     } catch (e) {
         next(e);

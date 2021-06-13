@@ -65,4 +65,15 @@ router.post('/:postId/comment',
     postController.createComment,
 );
 
+router.get('/user/me',
+    authenticate.handleAuthentication,
+    postController.getMyPost,
+);
+
+router.get('/user/:userId',
+    authenticate.handleAuthentication,
+    postController.getUserPost,
+);
+
+
 module.exports = router;

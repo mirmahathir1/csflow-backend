@@ -219,6 +219,15 @@ exports.fetchPost = async (postId, userId) => {
     return postDetails;
 }
 
+exports.fetchPosts = async (posts, skip, limit, userId) => {
+    posts = JSON.parse(JSON.stringify(posts));
+    posts = posts.slice(skip, skip + limit);
+    let promises = [];
+    for (let post of posts)
+        promises.push(this.fetchPost(post.id, userId));
+    return await Promise.all(promises);
+}
+
 exports.getPost = async (req, res, next) => {
     try {
         let user = res.locals.middlewareResponse.user;
@@ -517,6 +526,40 @@ exports.createComment = async (req, res, next) => {
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Commented on post successfully", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.getUserPost = async (req, res, next) => {
+    try {
+        const user = res.locals.middlewareResponse.user;
+
+        const exist = await User.isUser(req.params.userId);
+        if (!exist)
+            throw new ErrorHandler(400, 'User not found.');
+
+        let posts = await Post.userPost(req.params.userId);
+        const payload = await this.fetchPosts(posts, 0, 1000, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Post of user id " + req.params.userId + " fetched successfully", payload));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.getMyPost = async (req, res, next) => {
+    try {
+        const user = res.locals.middlewareResponse.user;
+        console.log(user);
+        let posts = await Post.userPost(user.id);
+        const payload = await this.fetchPosts(posts, 0, 1000, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "My Post fetched successfully", payload));
 
     } catch (e) {
         next(e);
