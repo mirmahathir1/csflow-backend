@@ -152,11 +152,12 @@ exports.fetchPost = async (postId, userId) => {
 
     if (!postDetails)
         throw new ErrorHandler(400, 'Post not found.');
-
+/*
     if (!(postDetails.type.toLowerCase() === 'discussion' || postDetails.type.toLowerCase() === 'question'))
         throw new ErrorHandler(400, 'Invalid post type');
 
     let exist;
+
     if (postDetails.course) {
         exist = await Tag.isExist(postDetails.course, 'course');
         if (!exist)
@@ -173,11 +174,12 @@ exports.fetchPost = async (postId, userId) => {
         exist = await Tag.isExist(postDetails.topic, 'topic');
         if (!exist)
             throw new ErrorHandler(400, 'Topic not found.');
-    }
+    }*/
 
     // console.log(postDetails.date);
     postDetails.createdAt = dateTime.create(postDetails.createdAt).getTime();
     // console.log(postDetails.date);
+
 
     const owner = await User.getUserDetailsByUserID(postDetails.userID);
     if (!owner)
