@@ -14,6 +14,25 @@ exports.getSearchResult = async (req, res, next) => {
         let condition2 = "";
 
 
+        let exist;
+        if (req.body.courseId) {
+            exist = await Tag.isExist(req.body.courseId, 'course');
+            if (!exist)
+                throw new ErrorHandler(400, 'Course not found.');
+        }
+
+        if (req.body.book) {
+            exist = await Tag.isExist(req.body.book, 'book');
+            if (!exist)
+                throw new ErrorHandler(400, 'Book not found.');
+        }
+
+        if (req.body.topic) {
+            exist = await Tag.isExist(req.body.topic, 'topic');
+            if (!exist)
+                throw new ErrorHandler(400, 'Topic not found.');
+        }
+
 
         let request = req.query;
         // let request = req.body;
