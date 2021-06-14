@@ -20,9 +20,7 @@ exports.getSearchResult = async (req, res, next) => {
 
         request.level = parseInt(request.level+"");
         request.term = parseInt(request.term+"");
-        //
-        // console.log(req.body)
-        console.log(request)
+
 
         if (request.courseId) {
             condition += `courseName = '${request.courseId}'`;
@@ -38,6 +36,7 @@ exports.getSearchResult = async (req, res, next) => {
             condition2 += `name = '${request.topic}'`;
         }
         if (request.book) {
+            console.log("Executed book query")
             if (condition.length > 0)
                 condition += " or ";
             condition += `book = '${request.book}'`;
