@@ -18,9 +18,9 @@ exports.validatePost = () => {
 
         isFieldExist('topic'),
         matchStringType('topic'),
-
-        isFieldExist('termFinal'),
-        body('termFinal', `'termFinal' must be object type`).isObject(),
+        //
+        // isFieldExist('termFinal'),
+        // body('termFinal', `'termFinal' must be object type`).isObject(),
 
         isFieldExist('customTag'),
         body('customTag', `'customTag' must be an array`).isArray(),

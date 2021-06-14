@@ -37,10 +37,14 @@ const checkPostFields = async (post) => {
     if (!(post.type.toLowerCase() === 'discussion' || post.type.toLowerCase() === 'question'))
         throw new ErrorHandler(400, 'Invalid type');
 
-    if (!post.termFinal.level || typeof (post.termFinal.level) !== typeof (1))
-        throw new ErrorHandler(400, 'In term final object there must be a integer field named level');
-    if (!post.termFinal.term || typeof (post.termFinal.term) !== typeof (1))
-        throw new ErrorHandler(400, 'In term final object there must be a integer field named term');
+    if(post.termFinal) {
+        if(typeof (post.termFinal) !== typeof ({}))
+            throw new ErrorHandler(400, 'TermFinal must be a object type.');
+        if (!post.termFinal.level || typeof (post.termFinal.level) !== typeof (1))
+            throw new ErrorHandler(400, 'In term final object there must be a integer field named level');
+        if (!post.termFinal.term || typeof (post.termFinal.term) !== typeof (1))
+            throw new ErrorHandler(400, 'In term final object there must be a integer field named term');
+    }
 
     if (post.termFinal.level < 1 || post.termFinal.level > 5)
         throw new ErrorHandler(400, 'Invalid Level');
@@ -121,6 +125,13 @@ exports.createPost = async (req, res, next) => {
 
         const identifier = getUniqueIdentifier();
         // console.log(identifier);
+
+        if(!req.body.termFinal){
+            req.body.termFinal = {
+                level: 0,
+                term: 0
+            }
+        }
 
         await Post.createPost(user.id, req.body.type,
             req.body.title, req.body.description,

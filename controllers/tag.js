@@ -16,7 +16,7 @@ exports.controlTagRequest = async (req, res, next) => {
         const type = req.body.type;
         const course = req.body.course;
 
-        if (!(type.toLowerCase() === "book" || type.toLowerCase()() === "topic"))
+        if (!(type.toLowerCase() === "book" || type.toLowerCase() === "topic"))
             return res.status(404).send(new ErrorHandler(404, "Invalid tag type"));
 
         const courseTag = await Tag.findCourseIDByName(course);
