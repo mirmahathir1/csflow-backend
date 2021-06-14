@@ -37,19 +37,20 @@ const checkPostFields = async (post) => {
     if (!(post.type.toLowerCase() === 'discussion' || post.type.toLowerCase() === 'question'))
         throw new ErrorHandler(400, 'Invalid type');
 
-    if(post.termFinal) {
-        if(typeof (post.termFinal) !== typeof ({}))
+    if (post.termFinal) {
+        if (typeof (post.termFinal) !== typeof ({}))
             throw new ErrorHandler(400, 'TermFinal must be a object type.');
         if (!post.termFinal.level || typeof (post.termFinal.level) !== typeof (1))
             throw new ErrorHandler(400, 'In term final object there must be a integer field named level');
         if (!post.termFinal.term || typeof (post.termFinal.term) !== typeof (1))
             throw new ErrorHandler(400, 'In term final object there must be a integer field named term');
+
+        if (post.termFinal.level < 1 || post.termFinal.level > 5)
+            throw new ErrorHandler(400, 'Invalid Level');
+        if (post.termFinal.term < 1 || post.termFinal.term > 2)
+            throw new ErrorHandler(400, 'Invalid Term');
     }
 
-    if (post.termFinal.level < 1 || post.termFinal.level > 5)
-        throw new ErrorHandler(400, 'Invalid Level');
-    if (post.termFinal.term < 1 || post.termFinal.term > 2)
-        throw new ErrorHandler(400, 'Invalid Term');
 
     post.customTag.forEach(tag => {
         if (typeof (tag) !== typeof (""))
@@ -126,7 +127,7 @@ exports.createPost = async (req, res, next) => {
         const identifier = getUniqueIdentifier();
         // console.log(identifier);
 
-        if(!req.body.termFinal){
+        if (!req.body.termFinal) {
             req.body.termFinal = {
                 level: 0,
                 term: 0
@@ -163,29 +164,29 @@ exports.fetchPost = async (postId, userId) => {
 
     if (!postDetails)
         throw new ErrorHandler(400, 'Post not found.');
-/*
-    if (!(postDetails.type.toLowerCase() === 'discussion' || postDetails.type.toLowerCase() === 'question'))
-        throw new ErrorHandler(400, 'Invalid post type');
+    /*
+        if (!(postDetails.type.toLowerCase() === 'discussion' || postDetails.type.toLowerCase() === 'question'))
+            throw new ErrorHandler(400, 'Invalid post type');
 
-    let exist;
+        let exist;
 
-    if (postDetails.course) {
-        exist = await Tag.isExist(postDetails.course, 'course');
-        if (!exist)
-            throw new ErrorHandler(400, 'Course not found.');
-    }
+        if (postDetails.course) {
+            exist = await Tag.isExist(postDetails.course, 'course');
+            if (!exist)
+                throw new ErrorHandler(400, 'Course not found.');
+        }
 
-    if (postDetails.book) {
-        exist = await Tag.isExist(postDetails.book, 'book');
-        if (!exist)
-            throw new ErrorHandler(400, 'Book not found.');
-    }
+        if (postDetails.book) {
+            exist = await Tag.isExist(postDetails.book, 'book');
+            if (!exist)
+                throw new ErrorHandler(400, 'Book not found.');
+        }
 
-    if (postDetails.topic) {
-        exist = await Tag.isExist(postDetails.topic, 'topic');
-        if (!exist)
-            throw new ErrorHandler(400, 'Topic not found.');
-    }*/
+        if (postDetails.topic) {
+            exist = await Tag.isExist(postDetails.topic, 'topic');
+            if (!exist)
+                throw new ErrorHandler(400, 'Topic not found.');
+        }*/
 
     // console.log(postDetails.date);
     postDetails.createdAt = dateTime.create(postDetails.createdAt).getTime();
