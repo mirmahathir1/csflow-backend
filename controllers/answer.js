@@ -1,4 +1,5 @@
 const Answer = require('../models/answer');
+const Comment = require('../models/comment');
 
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
@@ -193,3 +194,120 @@ exports.deleteFollow = async (req, res, next) => {
     }
 };
 
+exports.addUpVote = async (req, res, next) => {
+    try {
+        const answerId = req.params.answerId;
+        const user = res.locals.middlewareResponse.user;
+
+        const answerExist = await Answer.isAnswerExist(answerId);
+        if (!answerExist)
+            throw new ErrorHandler(400, 'Answer not found.');
+
+        const alreadyUpVoted = await Answer.isUpVoted(answerId, user.id);
+        if (alreadyUpVoted)
+            throw new ErrorHandler(400, 'Upvote already given.');
+
+        await Answer.addUpVote(answerId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Upvote successful.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.deleteUpVote = async (req, res, next) => {
+    try {
+        const answerId = req.params.answerId;
+        const user = res.locals.middlewareResponse.user;
+
+        const answerExist = await Answer.isAnswerExist(answerId);
+        if (!answerExist)
+            throw new ErrorHandler(400, 'Answer not found.');
+
+        const alreadyUpVoted = await Answer.isUpVoted(answerId, user.id);
+        if (!alreadyUpVoted)
+            throw new ErrorHandler(400, 'Upvote not found.');
+
+        await Answer.deleteUpVote(answerId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Upvote deletion successful.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+
+exports.addDownVote = async (req, res, next) => {
+    try {
+        const answerId = req.params.answerId;
+        const user = res.locals.middlewareResponse.user;
+
+        const answerExist = await Answer.isAnswerExist(answerId);
+        if (!answerExist)
+            throw new ErrorHandler(400, 'Answer not found.');
+
+        const alreadyDownVoted = await Answer.isDownVoted(answerId, user.id);
+        if (alreadyDownVoted)
+            throw new ErrorHandler(400, 'A downvote is already given.');
+
+        await Answer.addDownVote(answerId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Downvote given successfully.", null));
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.deleteDownVote = async (req, res, next) => {
+    try {
+        const answerId = req.params.answerId;
+        const user = res.locals.middlewareResponse.user;
+
+        const answerExist = await Answer.isAnswerExist(answerId);
+        if (!answerExist)
+            throw new ErrorHandler(400, 'Answer not found.');
+
+        const alreadyDownVoted = await Answer.isDownVoted(answerId, user.id);
+        if (!alreadyDownVoted)
+            throw new ErrorHandler(400, 'Downvote not found.');
+
+        await Answer.deleteDownVote(answerId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Downvote removed successfully.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+
+exports.createComment = async (req, res, next) => {
+    try {
+
+        // console.log(req.body);
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            throw new ErrorHandler(400, errors);
+
+        const answerId = req.params.answerId;
+        const user = res.locals.middlewareResponse.user;
+
+        const answerExist = await Answer.isAnswerExist(answerId);
+        if (!answerExist)
+            throw new ErrorHandler(400, 'Answer not found.');
+
+        await Comment.createAnswerComment(answerId, user.id, req.body.description);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Comment given successfully", null));
+
+    } catch (e) {
+        next(e);
+    }
+};

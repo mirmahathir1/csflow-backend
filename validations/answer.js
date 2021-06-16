@@ -11,3 +11,10 @@ exports.validateAnswer = () => {
         body('files', `'files' must be an array`).isArray(),
     ]
 };
+
+exports.validateComment = () => {
+    return [
+        isFieldExist('description'),
+        matchStringType('description'),
+    ]
+};

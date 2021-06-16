@@ -166,5 +166,30 @@ module.exports = class Answer {
                                          and answerId = ${answerId}`);
         return result[0][0];
     }
+    
+    static async addUpVote(answerID, userID) {
+        await db.execute(`insert into vote (type, answerID, UserID)
+                          values (1, ${answerID}, ${userID})`);
+    }
 
+    static async deleteUpVote(answerID, userID) {
+        await db.execute(`delete
+                          from vote
+                          where type = 1
+                            and answerID = ${answerID}
+                            and userID = ${userID}`);
+    }
+
+    static async addDownVote(answerID, userID) {
+        await db.execute(`insert into vote (type, answerID, UserID)
+                          values (0, ${answerID}, ${userID})`);
+    }
+
+    static async deleteDownVote(answerID, userID) {
+        await db.execute(`delete
+                          from vote
+                          where type = 0
+                            and answerID = ${answerID}
+                            and userID = ${userID}`);
+    }
 };

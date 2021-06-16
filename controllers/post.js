@@ -680,7 +680,7 @@ exports.deleteDownVote = async (req, res, next) => {
         if (!alreadyDownVoted)
             throw new ErrorHandler(400, 'Down Vote not found.');
 
-        await Post.addDownVote(postId, user.id);
+        await Post.deleteDownVote(postId, user.id);
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Downvote removed successfully.", null));

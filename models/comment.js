@@ -74,6 +74,13 @@ module.exports = class Comment {
                                   '${description}', current_timestamp())`);
     }
 
+    static async createAnswerComment(answerId, userId, description) {
+        await db.execute(`insert into comment (answerId, UserID,
+                                               description, date)
+                          values (${answerId}, ${userId},
+                                  '${description}', current_timestamp())`);
+    }
+
     static async isReport(commentId, userId) {
         const result = await db.execute(`select 1 as exist
                                          from report

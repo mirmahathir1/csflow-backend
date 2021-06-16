@@ -37,4 +37,30 @@ router.delete('/:answerId/follow',
     answerController.deleteFollow,
 );
 
+router.post('/:answerId/upvote',
+    authenticate.handleAuthentication,
+    answerController.addUpVote,
+);
+
+router.delete('/:answerId/upvote',
+    authenticate.handleAuthentication,
+    answerController.deleteUpVote,
+);
+
+router.post('/:answerId/downvote',
+    authenticate.handleAuthentication,
+    answerController.addDownVote,
+);
+
+router.delete('/:answerId/downvote',
+    authenticate.handleAuthentication,
+    answerController.deleteDownVote,
+);
+
+router.post('/:answerId/comment',
+    answerValidators.validateComment(),
+    authenticate.handleAuthentication,
+    answerController.createComment,
+);
+
 module.exports = router;
