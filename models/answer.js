@@ -149,4 +149,22 @@ module.exports = class Answer {
                             and userID = ${userID}`);
     }
 
+    static async isUpVoted(answerId, userId) {
+        let result = await db.execute(`select 1 as exist
+                                         from vote
+                                         where type = 1
+                                         and userid = ${userId}
+                                         and answerId = ${answerId}`);
+        return result[0][0];
+    }
+
+    static async isDownVoted(answerId, userId) {
+        let result = await db.execute(`select 1 as exist
+                                         from vote
+                                         where type = 0
+                                         and userid = ${userId}
+                                         and answerId = ${answerId}`);
+        return result[0][0];
+    }
+
 };

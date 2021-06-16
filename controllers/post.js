@@ -229,6 +229,15 @@ exports.fetchPost = async (postId, userId) => {
         comment.isReported = (await Comment.isReport(comment.commentId, userId)) != null;
         delete comment.ownerID;
     }
+    
+    ///////////////////////////////////////
+    if((await Post.isUpVoted(postId, userId)))
+        postDetails.voteStatus = 1;
+    else if((await Post.isDownVoted(postId, userId)))
+        postDetails.voteStatus = -1;
+    else
+        postDetails.voteStatus = 0;
+    //////////////////////////////////////
 
     return postDetails;
 }
@@ -473,6 +482,15 @@ exports.getAnswer = async (req, res, next) => {
                 comment.isReported = (await Comment.isReport(comment.commentId, user.id)) != null;
                 delete comment.ownerID;
             }
+
+            ///////////////////////////////////////
+            if((await Answer.isUpVoted(answer.answerId, user.id)))
+                answer.voteStatus = 1;
+            else if((await Answer.isDownVoted(answer.answerId, user.id)))
+                answer.voteStatus = -1;
+            else
+                answer.voteStatus = 0;
+            //////////////////////////////////////
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200,

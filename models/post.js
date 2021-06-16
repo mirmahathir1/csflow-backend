@@ -222,4 +222,24 @@ module.exports = class Post {
                                          order by upvotecount desc`);
         return response[0];
     }
+
+    static async isUpVoted(postId, userId) {
+        let result = await db.execute(`select 1 as exist
+                                         from vote
+                                         where type = 1
+                                         and userid = ${userId}
+                                         and postid = ${postId}
+                                         and answerid is null`);
+        return result[0][0];
+    }
+    
+    static async isDownVoted(postId, userId) {
+        let result = await db.execute(`select 1 as exist
+                                         from vote
+                                         where type = 0
+                                         and userid = ${userId}
+                                         and postid = ${postId}
+                                         and answerid is null`);
+        return result[0][0];
+    }
 };
