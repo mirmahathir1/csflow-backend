@@ -75,5 +75,25 @@ router.get('/user/:userId',
     postController.getUserPost,
 );
 
+router.post('/:postId/upvote',
+    authenticate.handleAuthentication,
+    postController.addUpVote,
+);
+
+router.delete('/:postId/upvote',
+    authenticate.handleAuthentication,
+    postController.deleteUpVote,
+);
+
+router.post('/:postId/downvote',
+    authenticate.handleAuthentication,
+    postController.addDownVote,
+);
+
+router.delete('/:postId/downvote',
+    authenticate.handleAuthentication,
+    postController.deleteDownVote,
+);
+
 
 module.exports = router;

@@ -225,21 +225,50 @@ module.exports = class Post {
 
     static async isUpVoted(postId, userId) {
         let result = await db.execute(`select 1 as exist
-                                         from vote
-                                         where type = 1
+                                       from vote
+                                       where type = 1
                                          and userid = ${userId}
                                          and postid = ${postId}
                                          and answerid is null`);
         return result[0][0];
     }
-    
+
     static async isDownVoted(postId, userId) {
         let result = await db.execute(`select 1 as exist
-                                         from vote
-                                         where type = 0
+                                       from vote
+                                       where type = 0
                                          and userid = ${userId}
                                          and postid = ${postId}
                                          and answerid is null`);
         return result[0][0];
     }
+
+    static async addUpVote(postID, userID) {
+        await db.execute(`insert into vote (type, PostID, UserID)
+                          values (1, ${postID}, ${userID})`);
+    }
+
+    static async deleteUpVote(postID, userID) {
+        await db.execute(`delete
+                          from vote
+                          where type = 1
+                            and postid = ${postID}
+                            and userID = ${userID}
+                            and answerid is null`);
+    }
+
+    static async addDownVote(postID, userID) {
+        await db.execute(`insert into vote (type, PostID, UserID)
+                          values (0, ${postID}, ${userID})`);
+    }
+
+    static async deleteDownVote(postID, userID) {
+        await db.execute(`delete
+                          from vote
+                          where type = 0
+                            and postid = ${postID}
+                            and userID = ${userID}
+                            and answerid is null`);
+    }
+
 };

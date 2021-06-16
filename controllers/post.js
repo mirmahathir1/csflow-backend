@@ -597,3 +597,95 @@ exports.getMyPost = async (req, res, next) => {
         next(e);
     }
 };
+
+exports.addUpVote = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const alreadyUpVoted = await Post.isUpVoted(postId, user.id);
+        if (alreadyUpVoted)
+            throw new ErrorHandler(400, 'Upvote already given.');
+
+        await Post.addUpVote(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Upvote successful.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.deleteUpVote = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const alreadyUpVoted = await Post.isUpVoted(postId, user.id);
+        if (!alreadyUpVoted)
+            throw new ErrorHandler(400, 'Upvote not found.');
+
+        await Post.deleteUpVote(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Upvote deletion successful.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.addDownVote = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const alreadyDownVoted = await Post.isDownVoted(postId, user.id);
+        if (alreadyDownVoted)
+            throw new ErrorHandler(400, 'DownVote already given.');
+
+        await Post.addDownVote(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Downvote given successfully.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.deleteDownVote = async (req, res, next) => {
+    try {
+        const postId = req.params.postId;
+        const user = res.locals.middlewareResponse.user;
+
+        const postExist = await Post.isPostExist(postId);
+        if (!postExist)
+            throw new ErrorHandler(400, 'Post not found.');
+
+        const alreadyDownVoted = await Post.isDownVoted(postId, user.id);
+        if (!alreadyDownVoted)
+            throw new ErrorHandler(400, 'Down Vote not found.');
+
+        await Post.addDownVote(postId, user.id);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Downvote removed successfully.", null));
+
+    } catch (e) {
+        next(e);
+    }
+};
