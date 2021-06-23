@@ -219,7 +219,7 @@ exports.createCourse = async (req,res,next) => {
 
         let count = Object.values(row);
         let tagId = count[0] + 1;
-        await Tag.addTag(tagId,'course',title);
+        await Tag.addTag(tagId,'course',courseId);
         for(k=0;k<batch.length;k++){
             await Coursedetails.createCourse(courseId,title,level,term,tagId,batch[k].ID);
         }
@@ -260,7 +260,7 @@ exports.updateCourse = async (req,res,next) => {
             throw new ErrorHandler(404, "Invalid level/ term", null);
         }
 
-        await Tag.updateTags(courseID[0].CourseTagID,'course',title);
+        await Tag.updateTags(courseID[0].CourseTagID,'course',newCourse);
         await Coursedetails.updateCourse(courseNumber,level,term,title,newCourse);
         return res.status(200).send(new SuccessResponse("OK", 200, "Course updated successfully", null));
     } catch (e) {
