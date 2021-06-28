@@ -15,7 +15,8 @@ module.exports = class Post {
                                                 book,
                                                 topic,
                                                 upvoteCount,
-                                                downvoteCount
+                                                downvoteCount,
+                                                description
                                          from post
                                          where ID = ${postid}`);
         return response[0][0];
