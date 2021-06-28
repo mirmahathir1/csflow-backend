@@ -109,10 +109,17 @@ exports.authSignUp = async (req, res, next) => {
             random: Math.floor(Math.random()*1000000)
         }, process.env.BCRYPT_SALT);
 
-        await deleteAllTimeExceedTempAccount(TempUser);
-        await TempUser.deleteTempAccountByEmail(email);
-        await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
-        await transporter.sendMail(getSignUpOptions(email, token));
+        try {
+            await deleteAllTimeExceedTempAccount(TempUser);
+            await TempUser.deleteTempAccountByEmail(email);
+            await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
+            await transporter.sendMail(getSignUpOptions(email, token));
+        }
+        catch (e) {
+            console.log(e);
+            return res.status(400).send(new ErrorHandler(400,
+                `Unexpected error. Try again later.`));
+        }
 
         return res.status(200).send(new SuccessResponse(200, "OK",
             "A verification email has been sent to your email.", null));

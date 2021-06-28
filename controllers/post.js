@@ -229,11 +229,11 @@ exports.fetchPost = async (postId, userId) => {
         comment.isReported = (await Comment.isReport(comment.commentId, userId)) != null;
         delete comment.ownerID;
     }
-    
+
     ///////////////////////////////////////
-    if((await Post.isUpVoted(postId, userId)))
+    if ((await Post.isUpVoted(postId, userId)))
         postDetails.voteStatus = 1;
-    else if((await Post.isDownVoted(postId, userId)))
+    else if ((await Post.isDownVoted(postId, userId)))
         postDetails.voteStatus = -1;
     else
         postDetails.voteStatus = 0;
@@ -277,7 +277,6 @@ exports.updatePost = async (req, res, next) => {
         const user = res.locals.middlewareResponse.user;
 
         await checkPostOwner(postId, user.id);
-
         await checkPostFields(req.body);
 
         await Post.updatePost(postId, req.body.type,
@@ -296,7 +295,8 @@ exports.updatePost = async (req, res, next) => {
             for (const resource of prevResources) {
                 let found = false;
                 for (const newResource of req.body.resources) {
-                    if (newResource.link === resource.link && newResource.type === resource.type) {
+                    if (newResource.link === resource.link &&
+                        newResource.type === resource.type) {
                         console.log("Found");
                         found = true;
                         break;
@@ -484,9 +484,9 @@ exports.getAnswer = async (req, res, next) => {
             }
 
             ///////////////////////////////////////
-            if((await Answer.isUpVoted(answer.answerId, user.id)))
+            if ((await Answer.isUpVoted(answer.answerId, user.id)))
                 answer.voteStatus = 1;
-            else if((await Answer.isDownVoted(answer.answerId, user.id)))
+            else if ((await Answer.isDownVoted(answer.answerId, user.id)))
                 answer.voteStatus = -1;
             else
                 answer.voteStatus = 0;
