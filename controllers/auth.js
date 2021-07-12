@@ -3,7 +3,6 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const dateTime = require('node-datetime');
 
-
 const {SuccessResponse} = require('../response/success');
 const TempUser = require('../models/tempuser');
 const ForgetPassword = require('../models/forgetpassword');

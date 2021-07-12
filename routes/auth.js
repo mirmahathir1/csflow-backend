@@ -1,6 +1,5 @@
 const express = require('express');
 
-
 const userController = require('../controllers/user');
 const authController = require('../controllers/auth');
 const userValidators = require('../validations/user')

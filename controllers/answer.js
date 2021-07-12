@@ -1,10 +1,24 @@
 const Answer = require('../models/answer');
+const Post = require('../models/post');
 const Comment = require('../models/comment');
 
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
 const {deleteImage} = require('../storage/cleanup');
+
+const getUniqueIdentifier = () => {
+    const identifier = new Date().getTime().toString() +
+        Math.ceil(Math.random() * 10000000000000000000000000).toString() +
+        Math.ceil(Math.random() * 10000000000000000000000000).toString() +
+        Math.ceil(Math.random() * 10000000000000000000000000).toString() +
+        Math.ceil(Math.random() * 10000000000000000000000000).toString() +
+        Math.ceil(Math.random() * 10000000000000000000000000).toString() +
+        Math.ceil(Math.random() * 10000000000000000000000000).toString() +
+        Math.ceil(Math.random() * 10000000000000000000000000).toString();
+
+    return identifier.substring(0, 20);
+};
 
 const checkAnswerOwner = async (answerId, ownerId) => {
     const answerExist = await Answer.isAnswerExist(answerId);
@@ -302,10 +316,37 @@ exports.createComment = async (req, res, next) => {
         if (!answerExist)
             throw new ErrorHandler(400, 'Answer not found.');
 
-        await Comment.createAnswerComment(answerId, user.id, req.body.description);
+        const identifier = getUniqueIdentifier();
+        await Comment.createAnswerComment(answerId, user.id,
+            req.body.description, identifier);
+
+        const commentId = await Comment.getCommentIDByIdentifier(identifier);
 
         return res.status(200).send(new SuccessResponse("OK", 200,
-            "Comment given successfully", null));
+            "Comment given successfully", {commentId}));
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.acceptAnswer = async (req, res, next) => {
+    try {
+        const answerId = req.params.answerId;
+        const user = res.locals.middlewareResponse.user;
+
+        const answersDetails = await Answer.getAnswerDetails(answerId);
+        if (!answersDetails)
+            throw new ErrorHandler(400, 'Answers not found.');
+
+        const isOwner = await Post.isPostOwner(answersDetails.PostID, user.id);
+        if (!isOwner)
+            throw new ErrorHandler(400, 'You don’t own this post');
+
+        await Post.acceptAnswer(answersDetails.PostID, answerId);
+
+        return res.status(200).send(new SuccessResponse("OK", 200,
+            "Answer accepted successfully", null));
 
     } catch (e) {
         next(e);

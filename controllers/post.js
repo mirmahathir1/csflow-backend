@@ -237,6 +237,10 @@ exports.fetchPost = async (postId, userId) => {
         postDetails.voteStatus = -1;
     else
         postDetails.voteStatus = 0;
+
+    //////////////////////////////////////
+    postDetails.upvoteCount = await Post.getUpVoteCount(postId);
+    postDetails.downvoteCount = await Post.getDownVoteCount(postId);
     //////////////////////////////////////
 
     return postDetails;
@@ -491,6 +495,12 @@ exports.getAnswer = async (req, res, next) => {
             else
                 answer.voteStatus = 0;
             //////////////////////////////////////
+
+
+            //////////////////////////////////////
+            answer.upvoteCount = await Answer.getUpVoteCount(postId);
+            answer.downvoteCount = await Answer.getDownVoteCount(postId);
+            //////////////////////////////////////
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200,
@@ -532,8 +542,15 @@ exports.createAnswer = async (req, res, next) => {
             await Answer.addAnswerResource(answerID,
                 resource.link, resource.type);
 
+        const owner = await User.getUserDetailsByUserID(user.id);
+
+        const payload = {
+            answerId: answerID,
+            owner
+        }
+
         return res.status(200).send(new SuccessResponse("OK", 200,
-            "Answer posted successfully", null));
+            "Answer posted successfully", payload));
 
     } catch (e) {
         next(e);
@@ -554,10 +571,14 @@ exports.createComment = async (req, res, next) => {
         if (!postExist)
             throw new ErrorHandler(400, 'Post not found.');
 
-        await Comment.createPostComment(postId, user.id, req.body.description);
+        const identifier = getUniqueIdentifier();
+        await Comment.createPostComment(postId, user.id,
+            req.body.description, identifier);
+
+        const commentId = await Comment.getCommentIDByIdentifier(identifier);
 
         return res.status(200).send(new SuccessResponse("OK", 200,
-            "Commented on post successfully", null));
+            "Commented on post successfully", {commentId}));
 
     } catch (e) {
         next(e);

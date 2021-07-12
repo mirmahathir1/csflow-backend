@@ -67,18 +67,27 @@ module.exports = class Comment {
         return result[0][0];
     }
 
-    static async createPostComment(postId, userId, description) {
+    static async createPostComment(postId, userId, description, identifier) {
         await db.execute(`insert into comment (PostID, UserID,
-                                               description, date)
+                                               description, date, identifier)
                           values (${postId}, ${userId},
-                                  '${description}', current_timestamp())`);
+                                  '${description}', current_timestamp(),
+                                  '${identifier}')`);
     }
 
-    static async createAnswerComment(answerId, userId, description) {
+    static async createAnswerComment(answerId, userId, description, identifier) {
         await db.execute(`insert into comment (answerId, UserID,
-                                               description, date)
+                                               description, date, identifier)
                           values (${answerId}, ${userId},
-                                  '${description}', current_timestamp())`);
+                                  '${description}', current_timestamp(),
+                                  '${identifier}')`);
+    }
+
+    static async getCommentIDByIdentifier(identifier) {
+        let response = await db.execute(`select id
+                                         from comment
+                                         where identifier = '${identifier}'`);
+        return response[0][0].id;
     }
 
     static async isReport(commentId, userId) {

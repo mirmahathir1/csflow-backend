@@ -166,7 +166,23 @@ module.exports = class Answer {
                                          and answerId = ${answerId}`);
         return result[0][0];
     }
-    
+
+    static async getUpVoteCount(answerID) {
+        const result = await db.execute(`select count(*) as c
+                          from vote
+                          where type = 1
+                            and answerID = ${answerID}`);
+        return result[0][0]['c'];
+    }
+
+    static async getDownVoteCount(answerID) {
+        const result = await db.execute(`select count(*) as c
+                          from vote
+                          where type = 0
+                            and answerID = ${answerID}`);
+        return result[0][0]['c'];
+    }
+
     static async addUpVote(answerID, userID) {
         await db.execute(`insert into vote (type, answerID, UserID)
                           values (1, ${answerID}, ${userID})`);

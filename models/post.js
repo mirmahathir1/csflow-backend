@@ -244,6 +244,22 @@ module.exports = class Post {
         return result[0][0];
     }
 
+    static async getUpVoteCount(postID) {
+        const result = await db.execute(`select count(*) as c
+                          from vote
+                          where type = 1
+                            and PostID = ${postID}`);
+        return result[0][0]['c'];
+    }
+
+    static async getDownVoteCount(postID) {
+        const result = await db.execute(`select count(*) as c
+                          from vote
+                          where type = 0
+                            and PostID = ${postID}`);
+        return result[0][0]['c'];
+    }
+
     static async addUpVote(postID, userID) {
         await db.execute(`insert into vote (type, PostID, UserID)
                           values (1, ${postID}, ${userID})`);
@@ -272,4 +288,9 @@ module.exports = class Post {
                             and answerid is null`);
     }
 
+    static async acceptAnswer(postID, answerID) {
+        await db.execute(`update post
+                          set StarredAnswerID = ${answerID}
+                          where id = ${postID}`);
+    }
 };

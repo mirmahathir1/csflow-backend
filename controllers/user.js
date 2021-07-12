@@ -60,6 +60,7 @@ exports.deleteProfile = async (req, res, next) => {
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Account deletion successful", null));
     } catch (e) {
+        // console.log(e)
         next(e);
     }
 };

@@ -63,4 +63,9 @@ router.post('/:answerId/comment',
     answerController.createComment,
 );
 
+router.post('/:answerId/accept',
+    authenticate.handleAuthentication,
+    answerController.acceptAnswer,
+);
+
 module.exports = router;
