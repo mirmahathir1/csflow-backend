@@ -1,6 +1,8 @@
 const Answer = require('../models/answer');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
+const Notification = require('../models/notification');
+const User = require('../models/user');
 
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
@@ -223,10 +225,18 @@ exports.addUpVote = async (req, res, next) => {
 
         await Answer.addUpVote(answerId, user.id);
 
+        ///// Notification ///////
+        const ownerId = await Answer.getAnswerOwnerID(answerId);
+        const postId = (await Answer.getPostID(answerId))[0]['PostID'];
+        await Notification.addNotification(ownerId,
+            `${user.name} voted your answer.`,`/post/${postId}`);
+        ///// Notification ///////
+
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Upvote successful.", null));
 
     } catch (e) {
+        console.log(e)
         next(e);
     }
 };
@@ -269,6 +279,13 @@ exports.addDownVote = async (req, res, next) => {
             throw new ErrorHandler(400, 'A downvote is already given.');
 
         await Answer.addDownVote(answerId, user.id);
+
+        ///// Notification ///////
+        const ownerId = await Answer.getAnswerOwnerID(answerId);
+        const postId = (await Answer.getPostID(answerId))[0]['PostID'];
+        await Notification.addNotification(ownerId,
+            `${user.name} downvoted your answer.`,`/post/${postId}`);
+        ///// Notification ///////
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Downvote given successfully.", null));
@@ -344,6 +361,25 @@ exports.acceptAnswer = async (req, res, next) => {
             throw new ErrorHandler(400, 'You don’t own this post');
 
         await Post.acceptAnswer(answersDetails.PostID, answerId);
+
+        ///// Notification ///////
+        const ownerId = await Answer.getAnswerOwnerID(answerId);
+        const postId = (await Answer.getPostID(answerId))[0]['PostID'];
+        await Notification.addNotification(ownerId,
+            `${user.name} marked your answer as accepted.`,
+            `/post/${postId}`);
+
+        const postOwner = await User.getUserDetailsByUserID(ownerId);
+
+        let followers = await Post.getFollowers(postId);
+        followers = JSON.parse(JSON.stringify(followers));
+
+        for (const follower of followers) {
+            await Notification.addNotification(follower.userId,
+                `${user.name} marked an answer as accepted on ${postOwner.Name}’s question.`,
+                `/post/${postId}`);
+        }
+        ///// Notification ///////
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Answer accepted successfully", null));

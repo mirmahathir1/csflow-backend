@@ -145,6 +145,14 @@ module.exports = class Post {
         return result[0][0];
     }
 
+    static async getFollowers(postId) {
+        const result = await db.execute(`select userId
+                                         from follow
+                                         where postid = ${postId}
+                                           and answerId is null`);
+        return result[0];
+    }
+
     static async isReport(postId, userId) {
         const result = await db.execute(`select 1 as exist
                                          from report
@@ -168,6 +176,13 @@ module.exports = class Post {
                                          where id = ${postId}
                                            and userid = ${ownerId}`);
         return result[0][0];
+    }
+
+    static async getPostOwnerID(postId) {
+        const result = await db.execute(`select userId
+                                         from post
+                                         where id = ${postId}`);
+        return result[0][0]['userId'];
     }
 
     static async isQuestionTypePost(postID) {

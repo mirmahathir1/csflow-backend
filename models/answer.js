@@ -105,6 +105,13 @@ module.exports = class Answer {
         return result[0][0];
     }
 
+    static async getAnswerOwnerID(answerID) {
+        const result = await db.execute(`select userId
+                                         from answer
+                                         where id = ${answerID}`);
+        return result[0][0]['userId'];
+    }
+
     static async updateAnswer(answerId, description) {
         await db.execute(`update answer
                           set Description = '${description}'

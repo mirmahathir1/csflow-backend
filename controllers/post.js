@@ -3,6 +3,8 @@ const Answer = require('../models/answer');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 const Tag = require('../models/tag');
+const Notification = require('../models/notification');
+
 const dateTime = require('node-datetime');
 
 const {validationResult} = require('express-validator');
@@ -549,6 +551,24 @@ exports.createAnswer = async (req, res, next) => {
             owner
         }
 
+        ///// Notification ///////
+        const ownerId = await Post.getPostOwnerID(postId);
+        await Notification.addNotification(ownerId,
+            `${user.name} answered to your question.`, `/post/${postId}`);
+
+
+        const postOwner = await User.getUserDetailsByUserID(ownerId);
+
+        let followers = await Post.getFollowers(postId);
+        followers = JSON.parse(JSON.stringify(followers));
+
+        for (const follower of followers) {
+            await Notification.addNotification(follower.userId,
+                `${user.name} answered to ${postOwner.Name}’s question.`,
+                `/post/${postId}`);
+        }
+        ///// Notification ///////
+
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Answer posted successfully", payload));
 
@@ -577,10 +597,28 @@ exports.createComment = async (req, res, next) => {
 
         const commentId = await Comment.getCommentIDByIdentifier(identifier);
 
+        ///// Notification ///////
+        const ownerId = await Post.getPostOwnerID(postId);
+        await Notification.addNotification(ownerId,
+            `${user.name} commented on your post.`, `/post/${postId}`);
+
+        const postOwner = await User.getUserDetailsByUserID(ownerId);
+
+        let followers = await Post.getFollowers(postId);
+        followers = JSON.parse(JSON.stringify(followers));
+
+        for (const follower of followers) {
+            await Notification.addNotification(follower.userId,
+                `${user.name} commented on ${postOwner.Name}’s post.`,
+                `/post/${postId}`);
+        }
+        ///// Notification ///////
+
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Commented on post successfully", {commentId}));
 
     } catch (e) {
+        console.log(e);
         next(e);
     }
 };
@@ -634,6 +672,12 @@ exports.addUpVote = async (req, res, next) => {
 
         await Post.addUpVote(postId, user.id);
 
+        ///// Notification ///////
+        const ownerId = await Post.getPostOwnerID(postId);
+        await Notification.addNotification(ownerId,
+            `${user.name} voted your post.`, `/post/${postId}`);
+        ///// Notification ///////
+
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Upvote successful.", null));
 
@@ -679,6 +723,12 @@ exports.addDownVote = async (req, res, next) => {
             throw new ErrorHandler(400, 'DownVote already given.');
 
         await Post.addDownVote(postId, user.id);
+
+        ///// Notification ///////
+        const ownerId = await Post.getPostOwnerID(postId);
+        await Notification.addNotification(ownerId,
+            `${user.name} downvoted your post.`, `/post/${postId}`);
+        ///// Notification ///////
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "Downvote given successfully.", null));

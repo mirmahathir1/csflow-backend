@@ -23,6 +23,7 @@ const postRoutes = require('./routes/post');
 const answerRoutes = require('./routes/answer');
 const commentRoutes = require('./routes/comment');
 const searchRoutes = require('./routes/search');
+const notificationRoutes = require('./routes/notification');
 const storageRoutes = require('./routes/storage');
 
 const {handleError} = require("./response/error");
@@ -37,6 +38,7 @@ app.use('/post', postRoutes);
 app.use('/answer', answerRoutes);
 app.use('/comment', commentRoutes);
 app.use('/search', searchRoutes);
+app.use('/notification', notificationRoutes);
 app.use('/resources', storageRoutes);
 
 app.get('/', (req, res) => {
