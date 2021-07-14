@@ -500,8 +500,8 @@ exports.getAnswer = async (req, res, next) => {
 
 
             //////////////////////////////////////
-            answer.UpvoteCount = await Answer.getUpVoteCount(postId);
-            answer.DownvoteCount = await Answer.getDownVoteCount(postId);
+            answer.UpvoteCount = await Answer.getUpVoteCount(answer.answerId);
+            answer.DownvoteCount = await Answer.getDownVoteCount(answer.answerId);
             //////////////////////////////////////
         }
 
