@@ -676,6 +676,7 @@ exports.addUpVote = async (req, res, next) => {
         if (alreadyUpVoted)
             throw new ErrorHandler(400, 'Upvote already given.');
 
+        await Post.deleteDownVote(postId, user.id);
         await Post.addUpVote(postId, user.id);
 
         ///// Notification ///////
@@ -728,6 +729,7 @@ exports.addDownVote = async (req, res, next) => {
         if (alreadyDownVoted)
             throw new ErrorHandler(400, 'DownVote already given.');
 
+        await Post.deleteUpVote(postId, user.id);
         await Post.addDownVote(postId, user.id);
 
         ///// Notification ///////
