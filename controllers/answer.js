@@ -229,7 +229,7 @@ exports.addUpVote = async (req, res, next) => {
         const ownerId = await Answer.getAnswerOwnerID(answerId);
         const postId = (await Answer.getPostID(answerId))[0]['PostID'];
         await Notification.addNotification(ownerId,
-            `${user.name} voted your answer.`,`/post/${postId}`);
+            `${user.name} voted your answer.`,`/post/details/${postId}`);
         ///// Notification ///////
 
         return res.status(200).send(new SuccessResponse("OK", 200,
@@ -284,7 +284,7 @@ exports.addDownVote = async (req, res, next) => {
         const ownerId = await Answer.getAnswerOwnerID(answerId);
         const postId = (await Answer.getPostID(answerId))[0]['PostID'];
         await Notification.addNotification(ownerId,
-            `${user.name} downvoted your answer.`,`/post/${postId}`);
+            `${user.name} downvoted your answer.`,`/post/details/${postId}`);
         ///// Notification ///////
 
         return res.status(200).send(new SuccessResponse("OK", 200,
@@ -367,7 +367,7 @@ exports.acceptAnswer = async (req, res, next) => {
         const postId = (await Answer.getPostID(answerId))[0]['PostID'];
         await Notification.addNotification(ownerId,
             `${user.name} marked your answer as accepted.`,
-            `/post/${postId}`);
+            `/post/details/${postId}`);
 
         const postOwner = await User.getUserDetailsByUserID(ownerId);
 
@@ -377,7 +377,7 @@ exports.acceptAnswer = async (req, res, next) => {
         for (const follower of followers) {
             await Notification.addNotification(follower.userId,
                 `${user.name} marked an answer as accepted on ${postOwner.Name}’s question.`,
-                `/post/${postId}`);
+                `/post/details/${postId}`);
         }
         ///// Notification ///////
 
