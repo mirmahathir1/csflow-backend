@@ -48,14 +48,8 @@ exports.getCourses = async (req, res, next) => {
         if (!user)
             throw new ErrorHandler(404, "User not found");
 
-        const result = await Tag.getAllCourseTag();
+        const courses = await Tag.getAllCourseTag();
         // console.log(result);
-
-        let courses = [];
-
-        result.forEach(res => {
-            courses.push(res.Name);
-        })
 
         return res.status(200).send(new SuccessResponse("OK", 200,
             "List of course’s fetched successfully", courses));

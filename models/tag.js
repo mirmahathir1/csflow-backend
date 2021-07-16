@@ -139,9 +139,16 @@ module.exports = class Tag {
     }
 
     static async getAllCourseTag() {
-        const result = await db.execute(`select Name
-                                         from predefinedtag
-                                         where Type = 'course'`);
+        const result = await db.execute(`
+            select CourseNo as courseId, Title as name
+            from coursedetail
+            where CourseTagID = any (
+                select ID
+                from predefinedtag
+                where Type = 'course'
+            )
+        `);
+
         return result[0];
     }
 
