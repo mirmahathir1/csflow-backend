@@ -243,6 +243,9 @@ exports.fetchPost = async (postId, userId) => {
     //////////////////////////////////////
     postDetails.UpvoteCount = await Post.getUpVoteCount(postId);
     postDetails.DownvoteCount = await Post.getDownVoteCount(postId);
+
+    delete postDetails.upvoteCount;
+    delete postDetails.downvoteCount;
     //////////////////////////////////////
 
     return postDetails;
@@ -502,6 +505,9 @@ exports.getAnswer = async (req, res, next) => {
             //////////////////////////////////////
             answer.UpvoteCount = await Answer.getUpVoteCount(answer.answerId);
             answer.DownvoteCount = await Answer.getDownVoteCount(answer.answerId);
+
+            delete answer.upvoteCount;
+            delete answer.downvoteCount;
             //////////////////////////////////////
         }
 
