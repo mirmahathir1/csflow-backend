@@ -11,33 +11,31 @@ const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
 const {SuccessResponse} = require('../response/success');
 
-exports.handlePrivilegedUser = async(req,res,next) => {
-    try{
+exports.handlePrivilegedUser = async (req, res, next) => {
+    try {
         let user = res.locals.middlewareResponse.user;
         let userid = user.id;
         let isCR = await User.isPrivilegedUser(userid);
 
-        if(isCR.CR != 1){
-            return res.status(401).send(new ErrorHandler(401, "You are not authorized to access this route",null));
+        if (isCR.CR != 1) {
+            return res.status(401).send(new ErrorHandler(401, "You are not authorized to access this route", null));
         }
         return next();
-    }
-    catch (e) {
+    } catch (e) {
         return res.status(500).send(new ErrorHandler(500, e.message));
     }
 };
-exports.handleAdmin = async(req,res,next) => {
-    try{
+exports.handleAdmin = async (req, res, next) => {
+    try {
         let user = res.locals.middlewareResponse.user;
         let userid = user.id;
         let isAdmin = await User.isAdmin(userid);
 
-        if(isAdmin.ADMIN !== 1){
-            return res.status(401).send(new ErrorHandler(401, "You are not authorized to access this route",null));
+        if (isAdmin.ADMIN !== 1) {
+            return res.status(401).send(new ErrorHandler(401, "You are not authorized to access this route", null));
         }
         return next();
-    }
-    catch (e) {
+    } catch (e) {
         return res.status(500).send(new ErrorHandler(500, e.message));
     }
 };
@@ -120,29 +118,30 @@ exports.handlePOSTSignUp = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Password must have a minimum length of 6 characters"));
 
-        if (email.substring(2, 4) !== '05')
-            return res.status(400).send(new ErrorHandler(400,
-                "Please Sign Up using departmental email."));
-
-        if (email.substring(7) !== '@ugrad.cse.buet.ac.bd')
-            return res.status(400).send(new ErrorHandler(400,
-                "Please Sign Up using departmental email."));
-
+        // if (email.substring(2, 4) !== '05')
+        //     return res.status(400).send(new ErrorHandler(400,
+        //         "Please Sign Up using departmental email."));
+        //
+        // if (email.substring(7) !== '@ugrad.cse.buet.ac.bd')
+        //     return res.status(400).send(new ErrorHandler(400,
+        //         "Please Sign Up using departmental email."));
+        //
         let newUserID;
         try {
-            if((parseInt(email.substring(0, 2))+2000) > (new Date().getFullYear()))
+            if ((parseInt(email.substring(0, 2)) + 2000) > (new Date().getFullYear()))
                 return res.status(400).send(new ErrorHandler(400,
                     "Invalid email address"));
 
-            const roll = parseInt(email.substring(4 ,3));
-            if(roll<=0 || roll>250)
+            const roll = parseInt(email.substring(4, 3));
+            if (roll <= 0 || roll > 250)
                 return res.status(400).send(new ErrorHandler(400,
-                "Invalid email address"));
+                    "Invalid email address"));
 
             newUserID = parseInt(email.substring(0, 7))
         } catch (e) {
-            return res.status(400).send(new ErrorHandler(400,
-                "Please Sign Up using departmental email."));
+            newUserID = false;
+            // return res.status(400).send(new ErrorHandler(400,
+            //     "Please Sign Up using departmental email."));
         }
 
         let response = await emailValidator.validate(email);
@@ -155,11 +154,13 @@ exports.handlePOSTSignUp = async (req, res, next) => {
             return res.status(400).send(new ErrorHandler(400,
                 "Associated email address already has an account"));
 
-        const newUser = await User.findById(newUserID);
+        if (newUserID) {
+            const newUser = await User.findById(newUserID);
 
-        if (newUser)
-            return res.status(400).send(new ErrorHandler(400,
-                `Student ID ${newUserID} has already an account.`));
+            if (newUser)
+                return res.status(400).send(new ErrorHandler(400,
+                    `Student ID ${newUserID} has already an account.`));
+        }
 
         res.locals.middlewareResponse = {
             email,

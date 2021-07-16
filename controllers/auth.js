@@ -34,6 +34,7 @@ const getSignUpOptions = (mail, token) => {
     const text = 'Use the following link to verify your CSFlow account.\n' +
         `https://csflow-buet.web.app/#/auth/signUp/complete?token=${token}\n` +
         'Note: This link is valid for 1 hour only.';
+    console.log(text);
     return getMailOptions(mail, text);
 };
 
@@ -73,9 +74,9 @@ exports.autoLogIn = async (req, res, next) => {
     try {
         let user = res.locals.middlewareResponse.user;
 
-        if(user)
+        if (user)
             return res.status(200).send(new SuccessResponse("OK", 200,
-            "Autologin successful", null));
+                "Autologin successful", null));
     } catch (e) {
         next(e);
     }
@@ -105,7 +106,7 @@ exports.authSignUp = async (req, res, next) => {
         const token = jwt.sign({
             email,
             exp: Math.floor(Date.now() / 1000) + (60 * 60),
-            random: Math.floor(Math.random()*1000000)
+            random: Math.floor(Math.random() * 1000000)
         }, process.env.BCRYPT_SALT);
 
         try {
@@ -113,8 +114,7 @@ exports.authSignUp = async (req, res, next) => {
             await TempUser.deleteTempAccountByEmail(email);
             await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
             await transporter.sendMail(getSignUpOptions(email, token));
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
             return res.status(400).send(new ErrorHandler(400,
                 `Unexpected error. Try again later.`));
@@ -138,7 +138,7 @@ exports.authSignUpComplete = async (req, res, next) => {
         const dt = dateTime.create();
         const formatted = dt.format('Y-m-d H:M:S');
         // console.log(formatted);
-        const user = {
+        let user = {
             id: tempUser.Email.substring(0, 7),
             batchID: tempUser.Email.substring(0, 2),
             name: tempUser.Name,
@@ -146,6 +146,16 @@ exports.authSignUpComplete = async (req, res, next) => {
             password: tempUser.Password,
             joiningDate: formatted,
         };
+
+        if (Number.isInteger(user.id) === false) {
+            let lastId = await User.getLastID();
+            // console.log(lastId)
+            if (lastId < 10000000)
+                lastId = 10000000;
+            // console.log(lastId)
+            user.id = lastId + 1;
+            user.batchID = 0;
+        }
 
         await User.addUser(user);
         // console.log("Done")
@@ -196,7 +206,7 @@ exports.forgetPassword = async (req, res, next) => {
         const token = jwt.sign({
             email,
             exp: Math.floor(Date.now() / 1000) + (60 * 60),
-            random: Math.floor(Math.random()*1000000)
+            random: Math.floor(Math.random() * 1000000)
         }, process.env.BCRYPT_SALT);
 
         await deleteAllTimeExceed(ForgetPassword);

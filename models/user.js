@@ -19,6 +19,12 @@ module.exports = class User {
         this.isAdmin = user.isAdmin;
     }
 
+    static async getLastID() {
+        const resultRow = await db.execute(`SELECT max(id) AS id
+                                            FROM user`);
+        return resultRow[0][0]['id'];
+    }
+
     static fetchAll() {
         return db.execute('SELECT * FROM user;');
     }
