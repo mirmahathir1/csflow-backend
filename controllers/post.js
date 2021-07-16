@@ -560,7 +560,7 @@ exports.createAnswer = async (req, res, next) => {
         ///// Notification ///////
         const ownerId = await Post.getPostOwnerID(postId);
         await Notification.addNotification(ownerId,
-            `${user.name} answered to your question.`, `/post/${postId}`);
+            `${user.name} answered to your question.`, `/post/details/${postId}`);
 
 
         const postOwner = await User.getUserDetailsByUserID(ownerId);
@@ -571,7 +571,7 @@ exports.createAnswer = async (req, res, next) => {
         for (const follower of followers) {
             await Notification.addNotification(follower.userId,
                 `${user.name} answered to ${postOwner.Name}’s question.`,
-                `/post/${postId}`);
+                `/post/details/${postId}`);
         }
         ///// Notification ///////
 
@@ -606,7 +606,7 @@ exports.createComment = async (req, res, next) => {
         ///// Notification ///////
         const ownerId = await Post.getPostOwnerID(postId);
         await Notification.addNotification(ownerId,
-            `${user.name} commented on your post.`, `/post/${postId}`);
+            `${user.name} commented on your post.`, `/post/details/${postId}`);
 
         const postOwner = await User.getUserDetailsByUserID(ownerId);
 
@@ -616,7 +616,7 @@ exports.createComment = async (req, res, next) => {
         for (const follower of followers) {
             await Notification.addNotification(follower.userId,
                 `${user.name} commented on ${postOwner.Name}’s post.`,
-                `/post/${postId}`);
+                `/post/details/${postId}`);
         }
         ///// Notification ///////
 
@@ -681,7 +681,7 @@ exports.addUpVote = async (req, res, next) => {
         ///// Notification ///////
         const ownerId = await Post.getPostOwnerID(postId);
         await Notification.addNotification(ownerId,
-            `${user.name} voted your post.`, `/post/${postId}`);
+            `${user.name} voted your post.`, `/post/details/${postId}`);
         ///// Notification ///////
 
         return res.status(200).send(new SuccessResponse("OK", 200,
@@ -733,7 +733,7 @@ exports.addDownVote = async (req, res, next) => {
         ///// Notification ///////
         const ownerId = await Post.getPostOwnerID(postId);
         await Notification.addNotification(ownerId,
-            `${user.name} downvoted your post.`, `/post/${postId}`);
+            `${user.name} downvoted your post.`, `/post/details/${postId}`);
         ///// Notification ///////
 
         return res.status(200).send(new SuccessResponse("OK", 200,
