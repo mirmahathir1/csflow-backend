@@ -259,6 +259,13 @@ module.exports = class Post {
         return result[0][0];
     }
 
+    static async getAnswerCount(postID) {
+        const result = await db.execute(`select count(*) as c
+                          from answer
+                          where PostID = ${postID}`);
+        return result[0][0]['c'];
+    }
+
     static async getUpVoteCount(postID) {
         const result = await db.execute(`select count(*) as c
                           from vote

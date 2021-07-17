@@ -246,6 +246,8 @@ exports.fetchPost = async (postId, userId) => {
 
     delete postDetails.upvoteCount;
     delete postDetails.downvoteCount;
+
+    postDetails.answerCount = await Post.getAnswerCount(postId);
     //////////////////////////////////////
 
     return postDetails;
