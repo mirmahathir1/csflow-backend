@@ -14,7 +14,7 @@ router.post('/',
     storageController.uploadFiles,
 );
 
-router.delete('/',
+router.post('/remove',
     storageValidator.validateDeleteResources(),
     authenticate.handleAuthentication,
     storageController.deleteFiles,
