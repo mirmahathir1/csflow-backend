@@ -6,6 +6,16 @@ const projectValidator = require('../validations/project');
 const idValidator = require('../validations/id');
 const router = express.Router();
 const authenticate = require('../middlewares/authenticate');
+router.delete('/thesis/:id/remove/:userid',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.deleteRequestedUserofThesis
+)
+router.delete('/project/:id/remove/:userid',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.deleteRequestedUserofProject
+)
 router.patch('/thesis/:id/accept',
     authenticate.handleAuthentication,
     idValidator.validateDetails(),

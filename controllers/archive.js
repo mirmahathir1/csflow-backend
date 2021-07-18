@@ -1063,3 +1063,102 @@ exports.rejectProject = async (req,res,next)=>{
         next(e);
     }
 };
+exports.deleteRequestedUserofProject = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let projectid = req.params.id;
+        let requsteduserid = req.params.userid;
+        let project = await Projectarchive.findProject(projectid);
+        if (!project) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+        let requestedProject = await ProjectRequest.getRequestedProject();
+
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedProject.length;t++){
+            if(requestedProject[t].ProjectID==req.params.id){
+                flag2=true;
+                break;
+            }
+        }
+
+        if(flag2===false){
+            throw new ErrorHandler(401, "Project not expecting approval/ rejection", null);
+        }
+        let owners = await Projectowner.getOwners(projectid);
+        let q;
+        let flag=false;
+        for(q=0;q<owners.length;q++){
+            if(owners[q].UserID==userid){
+                flag=true;
+                break;
+            }
+        }
+        if(flag===false){
+            throw new ErrorHandler(401, "You are unauthorized to delete requested owner", null);
+        }
+
+        await ProjectRequest.deleteRequest(projectid,requsteduserid);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Deletion is successful", null));
+
+    }catch (e) {
+        next(e);
+    }
+};
+exports.deleteRequestedUserofThesis = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let thesisid = req.params.id;
+        let requsteduserid = req.params.userid;
+        let thesis = await Thesisarchive.findThesis(thesisid);
+        if (!thesis) {
+            throw new ErrorHandler(404, "Thesis not found", null);
+        }
+        let requestedThesis = await ThesisRequest.getRequestedThesis();
+
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedThesis.length;t++){
+            if(requestedThesis[t].ThesisID==req.params.id){
+                flag2=true;
+                break;
+            }
+        }
+
+        if(flag2===false){
+            throw new ErrorHandler(401, "Thesis not expecting approval/ rejection", null);
+        }
+        let owners = await ThesisOwner.getOwners(thesisid);
+        let q;
+        let flag=false;
+        for(q=0;q<owners.length;q++){
+            if(owners[q].UserID==userid){
+                flag=true;
+                break;
+            }
+        }
+        if(flag===false){
+            throw new ErrorHandler(401, "You are unauthorized to delete requested owner", null);
+        }
+
+        await ThesisRequest.deleteRequest(thesisid,requsteduserid);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Deletion is successful", null));
+
+    }catch (e) {
+        next(e);
+    }
+};
+
