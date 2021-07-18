@@ -7,6 +7,7 @@ const {SuccessResponse} = require('../response/success');
 const TempUser = require('../models/tempuser');
 const ForgetPassword = require('../models/forgetpassword');
 const User = require('../models/user');
+const {ErrorHandler} = require('../response/error');
 
 const getEncryptedPassword = async (password) => {
     const salt = await bcrypt.genSalt(10);
@@ -113,15 +114,48 @@ exports.authSignUp = async (req, res, next) => {
             await deleteAllTimeExceedTempAccount(TempUser);
             await TempUser.deleteTempAccountByEmail(email);
             await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
-            await transporter.sendMail(getSignUpOptions(email, token));
+
+            //CODE EDITED BY MAHATHIR FROM HERE-------------------------------------
+            // await transporter.sendMail(getSignUpOptions(email, token));
+            const tempUser = await TempUser.getTempUserByToken(token);
+
+            await TempUser.deleteTempAccountByEmail(tempUser.Email);
+            // console.log("adding in user table")
+            const dt = dateTime.create();
+            const formatted = dt.format('Y-m-d H:M:S');
+            // console.log(formatted);
+            let user = {
+                id: tempUser.Email.substring(0, 7),
+                batchID: tempUser.Email.substring(0, 2),
+                name: tempUser.Name,
+                email: tempUser.Email,
+                password: tempUser.Password,
+                joiningDate: formatted,
+            };
+
+            if (Number.isInteger(user.id) === false) {
+                let lastId = await User.getLastID();
+                // console.log(lastId)
+                if (lastId < 10000000)
+                    lastId = 10000000;
+                // console.log(lastId)
+                user.id = lastId + 1;
+                user.batchID = 0;
+            }
+
+            await User.addUser(user);
+            // console.log("Done")
+
+            return res.status(200).send(new SuccessResponse(200, "OK",
+                "Sign up completed.", null));
         } catch (e) {
             console.log(e);
             return res.status(400).send(new ErrorHandler(400,
                 `Unexpected error. Try again later.`));
         }
 
-        return res.status(200).send(new SuccessResponse(200, "OK",
-            "A verification email has been sent to your email.", null));
+        // return res.status(200).send(new SuccessResponse(200, "OK",
+        //     "A verification email has been sent to your email.", null));
     } catch (e) {
         next(e);
     }
