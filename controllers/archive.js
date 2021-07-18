@@ -366,16 +366,22 @@ exports.editThesis = async (req, res, next) => {
         let temp=newOwners;
         let x,y;
         let requestedUsers = await ThesisRequest.getRequestedUsers(req.params.id);
+        let temp2 = requestedUsers;
         if(requestedUsers.length!==0){
             for(x=0;x<temp.length;x++){
                 for(y=0;y<requestedUsers.length;y++){
                     if(temp[x]===requestedUsers[y].UserID){
                         newOwners = newOwners.filter(function(ele){
                             return ele !== temp[x];});
+                        temp2 = temp2.filter((item) => item.UserID !== temp[x]);
                         continue;
                     }
                 }
             }
+        }
+        let b;
+        for(b=0;b<temp2.length;b++){
+            await ThesisRequest.deleteRequest(req.params.id,temp2[b].UserID);
         }
         for(q=0;q<newOwners.length;q++){
             //await ThesisOwner.create(req.params.id,owners[q]);
@@ -823,16 +829,22 @@ exports.editProject = async (req, res, next) => {
         let temp=newOwners;
         let x,y;
         let requestedUsers = await ProjectRequest.getRequestedUsers(req.params.id);
+        let temp2 = requestedUsers;
         if(requestedUsers.length!==0){
             for(x=0;x<temp.length;x++){
                 for(y=0;y<requestedUsers.length;y++){
                     if(temp[x]===requestedUsers[y].UserID){
                         newOwners = newOwners.filter(function(ele){
                             return ele !== temp[x];});
+                        temp2 = temp2.filter((item) => item.UserID !== temp[x]);
                         continue;
                     }
                 }
             }
+        }
+        let b;
+        for(b=0;b<temp2.length;b++){
+            await ProjectRequest.deleteRequest(req.params.id,temp2[b].UserID);
         }
         for(q=0;q<newOwners.length;q++){
             //await ThesisOwner.create(req.params.id,owners[q]);
