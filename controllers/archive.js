@@ -387,6 +387,42 @@ exports.editThesis = async (req, res, next) => {
         next(e);
     }
 };
+exports.getRequestedThesis = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let thesisid = req.params.id;
+        let thesis = await Thesisarchive.findThesis(req.params.id);
+        if (!thesis) {
+            throw new ErrorHandler(404, "Thesis not found", null);
+        }
+        let requestedThesis = await ThesisRequest.getRequestedThesis();
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedThesis.length;t++){
+            if(requestedThesis[t].ThesisID==thesisid){
+                flag2=true;
+                break;
+            }
+        }
+        if(flag2===false){
+            throw new ErrorHandler(401, "Thesis not expecting approval/ rejection", null);
+        }
+        let requestedUsers = await ThesisRequest.getRequestedUsers(thesisid);
+        if(requestedUsers.length===0){
+            throw new ErrorHandler(404, "There is no requested owner of this thesis", null);
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "Requested owners of this thesis are fetched successfully", requestedUsers));
+
+    }catch (e) {
+        next(e);
+    }
+};
 exports.acceptThesis = async (req,res,next)=>{
     try{
         const errors = validationResult(req);
@@ -891,6 +927,42 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Fetched project details successfully", Details));
     } catch (e) {
+        next(e);
+    }
+};
+exports.getRequestedProject = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let projectid = req.params.id;
+        let project = await Projectarchive.findProject(projectid);
+        if (!project) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+        let requestedProject = await ProjectRequest.getRequestedProject();
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedProject.length;t++){
+            if(requestedProject[t].ProjectID==projectid){
+                flag2=true;
+                break;
+            }
+        }
+        if(flag2===false){
+            throw new ErrorHandler(401, "Project not expecting approval/ rejection", null);
+        }
+        let requestedUsers = await ProjectRequest.getRequestedUsers(projectid);
+        if(requestedUsers.length===0){
+            throw new ErrorHandler(404, "There is no requested owner of this project", null);
+        }
+        return res.status(200).send(new SuccessResponse("OK", 200, "Requested owners of this project are fetched successfully", requestedUsers));
+
+    }catch (e) {
         next(e);
     }
 };

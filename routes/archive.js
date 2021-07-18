@@ -11,6 +11,16 @@ router.patch('/thesis/:id/accept',
     idValidator.validateDetails(),
     archiveController.acceptThesis
 )
+router.get('/thesis/:id/requested',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.getRequestedThesis
+)
+router.get('/project/:id/requested',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.getRequestedProject
+)
 router.delete('/thesis/:id/reject',
     authenticate.handleAuthentication,
     idValidator.validateDetails(),
