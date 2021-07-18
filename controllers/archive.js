@@ -128,7 +128,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
                 timestamp: singleComment.Date
             });
         }
-
+        let requestedUsers = await ThesisRequest.getRequestedUsers(req.params.id);
         let Details = {
             batch: firstThesis.BatchID,
             title: firstThesis.Title,
@@ -137,6 +137,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
             writers: array,
             description: firstThesis.Abstract,
             owners: owners,
+            requested_owners: requestedUsers,
             comments: comments
         };
 
@@ -226,7 +227,7 @@ exports.postThesis = async (req, res, next) => {
             //await ThesisOwner.create(id, owners[k]);
             if(userid!==owners[k]){
                 await ThesisRequest.addRequest(id,userid,owners[k]);
-                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis`);
+                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis/${id}`);
             }
         }
 
@@ -379,7 +380,7 @@ exports.editThesis = async (req, res, next) => {
         for(q=0;q<newOwners.length;q++){
             //await ThesisOwner.create(req.params.id,owners[q]);
             await ThesisRequest.addRequest(req.params.id,userid,newOwners[q]);
-            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis`);
+            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis/${req.params.id}`);
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Thesis edited Successfully", null));
@@ -711,7 +712,7 @@ exports.postProject = async (req, res, next) => {
             //await ThesisOwner.create(id, owners[k]);
             if(userid!==owners[k]){
                 await ProjectRequest.addRequest(id,userid,owners[k]);
-                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the project`,`/archive/project`);
+                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the project`,`/archive/project/${id}`);
             }
         }
 
@@ -836,7 +837,7 @@ exports.editProject = async (req, res, next) => {
         for(q=0;q<newOwners.length;q++){
             //await ThesisOwner.create(req.params.id,owners[q]);
             await ProjectRequest.addRequest(req.params.id,userid,newOwners[q]);
-            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the project`,`/archive/project`);
+            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the project`,`/archive/project/${req.params.id}`);
         }
 
         return res.status(201).send(new SuccessResponse("OK", 201, "Project edited Successfully", null));
@@ -912,6 +913,7 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
         }
         let CourseTitle = await Coursedetails.findCourseTitle(firstProject.CourseID);
         let newArray = firstProject.TagName.split(",");
+        let requestedUsers = await ProjectRequest.getRequestedUsers(req.params.id);
         let Details = {
             batch: firstProject.BatchID,
             course_no: CourseTitle[0].CourseNo,
@@ -922,6 +924,7 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
             github: firstProject.CodeLink,
             youtube:firstProject.VideoLink,
             owners: owners,
+            requested_owners: requestedUsers,
             comments: comments
         };
 
