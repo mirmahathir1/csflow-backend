@@ -152,7 +152,7 @@ exports.createPost = async (req, res, next) => {
             await Post.addPostResource(postID, resource.link, resource.type);
 
         return res.status(200).send(new SuccessResponse("OK", 200,
-            "Post created successfully", null));
+            "Post created successfully", {postId: postID}));
 
     } catch (e) {
         next(e);
