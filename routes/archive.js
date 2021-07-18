@@ -6,6 +6,16 @@ const projectValidator = require('../validations/project');
 const idValidator = require('../validations/id');
 const router = express.Router();
 const authenticate = require('../middlewares/authenticate');
+router.patch('/thesis/:id/accept',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.acceptThesis
+)
+router.delete('/thesis/:id/reject',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.rejectThesis
+)
 router.get('/thesis/batch/:batchNumber',
     authenticate.handleAuthentication,
     batchValidator.validateDetails(),
