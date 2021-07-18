@@ -16,6 +16,16 @@ router.delete('/thesis/:id/reject',
     idValidator.validateDetails(),
     archiveController.rejectThesis
 )
+router.patch('/project/:id/accept',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.acceptProject
+)
+router.delete('/project/:id/reject',
+    authenticate.handleAuthentication,
+    idValidator.validateDetails(),
+    archiveController.rejectProject
+)
 router.get('/thesis/batch/:batchNumber',
     authenticate.handleAuthentication,
     batchValidator.validateDetails(),

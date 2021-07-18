@@ -604,7 +604,7 @@ exports.postProject = async (req, res, next) => {
         let user = res.locals.middlewareResponse.user;
 
         let batchid = user.batchID;
-
+        let userid = user.id;
         let title = req.body.title;
         let codeLink = req.body.github;
         let videoLink = req.body.youtube;
@@ -669,8 +669,14 @@ exports.postProject = async (req, res, next) => {
         await Projectarchive.create(id,courseID[0].ID,batchid,title,description,videoLink,codeLink,topics);
         let k;
 
+        await Projectowner.create(id,userid);
+        //notification
         for (k = 0; k < owners.length; k++) {
-            await Projectowner.create(id, owners[k]);
+            //await ThesisOwner.create(id, owners[k]);
+            if(userid!==owners[k]){
+                await ProjectRequest.addRequest(id,userid,owners[k]);
+                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the project`,`/archive/project`);
+            }
         }
 
         return res.status(201).send(new SuccessResponse("OK", 201, "Project created Successfully", null));
@@ -752,10 +758,49 @@ exports.editProject = async (req, res, next) => {
 
         await Projectarchive.update(req.params.id,courseID[0].ID,batchid,title,description,videoLink,codeLink,topics);
 
-        await Projectowner.DeleteProjectOwner(req.params.id);
+        //await Projectowner.DeleteProjectOwner(req.params.id);
         let q;
-        for(q=0;q<owners.length;q++){
-            await Projectowner.create(req.params.id,owners[q]);
+        //notification
+        let newOwners=owners;
+
+        let oldOwners = await Projectowner.getOwners(req.params.id);
+        let delOwners=oldOwners;
+        let w,r;
+        for(w=0;w<owners.length;w++){
+            for(r=0;r<oldOwners.length;r++){
+                if(owners[w]===oldOwners[r].UserID){
+                    newOwners = newOwners.filter(function(ele){
+                        return ele !== owners[w];});
+                    delOwners = delOwners.filter((item) => item.UserID !== owners[w]);
+
+                    continue;
+                }
+            }
+        }
+        let h;
+
+        for(h=0;h<delOwners.length;h++){
+            await Projectowner.DeleteProjectOwners(req.params.id,delOwners[h].UserID);
+        }
+
+        let temp=newOwners;
+        let x,y;
+        let requestedUsers = await ProjectRequest.getRequestedUsers(req.params.id);
+        if(requestedUsers.length!==0){
+            for(x=0;x<temp.length;x++){
+                for(y=0;y<requestedUsers.length;y++){
+                    if(temp[x]===requestedUsers[y].UserID){
+                        newOwners = newOwners.filter(function(ele){
+                            return ele !== temp[x];});
+                        continue;
+                    }
+                }
+            }
+        }
+        for(q=0;q<newOwners.length;q++){
+            //await ThesisOwner.create(req.params.id,owners[q]);
+            await ProjectRequest.addRequest(req.params.id,userid,newOwners[q]);
+            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the project`,`/archive/project`);
         }
 
         return res.status(201).send(new SuccessResponse("OK", 201, "Project edited Successfully", null));
@@ -783,6 +828,7 @@ exports.deleteProject = async (req, res, next) => {
         }
 
         await Projectarchive.DeleteProject(req.params.id);
+        await ProjectRequest.deleteProjectID(req.params.id);
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Project deleted successfully", null));
     } catch (e) {
@@ -845,6 +891,100 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Fetched project details successfully", Details));
     } catch (e) {
+        next(e);
+    }
+};
+exports.acceptProject = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let projectid = req.params.id;
+        let project = await Projectarchive.findProject(projectid);
+        if (!project) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+        let requestedProject = await ProjectRequest.getRequestedProject();
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedProject.length;t++){
+            if(requestedProject[t].ProjectID==projectid){
+                flag2=true;
+                break;
+            }
+        }
+        if(flag2===false){
+            throw new ErrorHandler(401, "Project not expecting approval/ rejection", null);
+        }
+        let requestedUsers = await ProjectRequest.getRequestedUsers(projectid);
+        let q;
+        let flag=false;
+        for(q=0;q<requestedUsers.length;q++){
+            if(requestedUsers[q].UserID==userid){
+                flag=true;
+                break;
+            }
+        }
+        if(flag===false){
+            throw new ErrorHandler(401, "You are unauthorized to accept/reject this project", null);
+        }
+        await Projectowner.create(projectid,userid);
+        await ProjectRequest.deleteRequest(projectid,userid);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Project authorship accepted successfully", null));
+
+    }catch (e) {
+        next(e);
+    }
+};
+exports.rejectProject = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let projectid = req.params.id;
+        let project = await Projectarchive.findProject(projectid);
+        if (!project) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+        let requestedProject = await ProjectRequest.getRequestedProject();
+
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedProject.length;t++){
+            if(requestedProject[t].ProjectID==req.params.id){
+                flag2=true;
+                break;
+            }
+        }
+
+        if(flag2===false){
+            throw new ErrorHandler(401, "Project not expecting approval/ rejection", null);
+        }
+        let requestedUsers = await ProjectRequest.getRequestedUsers(projectid);
+        let q;
+        let flag=false;
+        for(q=0;q<requestedUsers.length;q++){
+            if(requestedUsers[q].UserID==userid){
+                flag=true;
+                break;
+            }
+        }
+        if(flag===false){
+            throw new ErrorHandler(401, "You are unauthorized to accept/reject this project", null);
+        }
+
+        await ProjectRequest.deleteRequest(projectid,userid);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Rejection successful", null));
+
+    }catch (e) {
         next(e);
     }
 };
