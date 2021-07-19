@@ -128,7 +128,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
                 timestamp: singleComment.Date
             });
         }
-
+        let requestedUsers = await ThesisRequest.getRequestedUsers(req.params.id);
         let Details = {
             batch: firstThesis.BatchID,
             title: firstThesis.Title,
@@ -137,6 +137,7 @@ exports.getThesisDetailsByThesisID = async (req, res, next) => {
             writers: array,
             description: firstThesis.Abstract,
             owners: owners,
+            requested_owners: requestedUsers,
             comments: comments
         };
 
@@ -226,7 +227,7 @@ exports.postThesis = async (req, res, next) => {
             //await ThesisOwner.create(id, owners[k]);
             if(userid!==owners[k]){
                 await ThesisRequest.addRequest(id,userid,owners[k]);
-                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis`);
+                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis/${id}`);
             }
         }
 
@@ -365,21 +366,27 @@ exports.editThesis = async (req, res, next) => {
         let temp=newOwners;
         let x,y;
         let requestedUsers = await ThesisRequest.getRequestedUsers(req.params.id);
+        let temp2 = requestedUsers;
         if(requestedUsers.length!==0){
             for(x=0;x<temp.length;x++){
                 for(y=0;y<requestedUsers.length;y++){
                     if(temp[x]===requestedUsers[y].UserID){
                         newOwners = newOwners.filter(function(ele){
                             return ele !== temp[x];});
+                        temp2 = temp2.filter((item) => item.UserID !== temp[x]);
                         continue;
                     }
                 }
             }
         }
+        let b;
+        for(b=0;b<temp2.length;b++){
+            await ThesisRequest.deleteRequest(req.params.id,temp2[b].UserID);
+        }
         for(q=0;q<newOwners.length;q++){
             //await ThesisOwner.create(req.params.id,owners[q]);
             await ThesisRequest.addRequest(req.params.id,userid,newOwners[q]);
-            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis`);
+            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the thesis`,`/archive/thesis/${req.params.id}`);
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Thesis edited Successfully", null));
@@ -711,7 +718,7 @@ exports.postProject = async (req, res, next) => {
             //await ThesisOwner.create(id, owners[k]);
             if(userid!==owners[k]){
                 await ProjectRequest.addRequest(id,userid,owners[k]);
-                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the project`,`/archive/project`);
+                await Notification.addNotification(owners[k],`${userid} wants to add you as an owner of the project`,`/archive/project/${id}`);
             }
         }
 
@@ -822,21 +829,27 @@ exports.editProject = async (req, res, next) => {
         let temp=newOwners;
         let x,y;
         let requestedUsers = await ProjectRequest.getRequestedUsers(req.params.id);
+        let temp2 = requestedUsers;
         if(requestedUsers.length!==0){
             for(x=0;x<temp.length;x++){
                 for(y=0;y<requestedUsers.length;y++){
                     if(temp[x]===requestedUsers[y].UserID){
                         newOwners = newOwners.filter(function(ele){
                             return ele !== temp[x];});
+                        temp2 = temp2.filter((item) => item.UserID !== temp[x]);
                         continue;
                     }
                 }
             }
         }
+        let b;
+        for(b=0;b<temp2.length;b++){
+            await ProjectRequest.deleteRequest(req.params.id,temp2[b].UserID);
+        }
         for(q=0;q<newOwners.length;q++){
             //await ThesisOwner.create(req.params.id,owners[q]);
             await ProjectRequest.addRequest(req.params.id,userid,newOwners[q]);
-            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the project`,`/archive/project`);
+            await Notification.addNotification(newOwners[q],`${userid} wants to add you as an owner of the project`,`/archive/project/${req.params.id}`);
         }
 
         return res.status(201).send(new SuccessResponse("OK", 201, "Project edited Successfully", null));
@@ -912,6 +925,7 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
         }
         let CourseTitle = await Coursedetails.findCourseTitle(firstProject.CourseID);
         let newArray = firstProject.TagName.split(",");
+        let requestedUsers = await ProjectRequest.getRequestedUsers(req.params.id);
         let Details = {
             batch: firstProject.BatchID,
             course_no: CourseTitle[0].CourseNo,
@@ -922,6 +936,7 @@ exports.getProjectDetailsByProjectID = async (req, res, next) => {
             github: firstProject.CodeLink,
             youtube:firstProject.VideoLink,
             owners: owners,
+            requested_owners: requestedUsers,
             comments: comments
         };
 
@@ -1060,3 +1075,102 @@ exports.rejectProject = async (req,res,next)=>{
         next(e);
     }
 };
+exports.deleteRequestedUserofProject = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let projectid = req.params.id;
+        let requsteduserid = req.params.userid;
+        let project = await Projectarchive.findProject(projectid);
+        if (!project) {
+            throw new ErrorHandler(404, "Project not found", null);
+        }
+        let requestedProject = await ProjectRequest.getRequestedProject();
+
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedProject.length;t++){
+            if(requestedProject[t].ProjectID==req.params.id){
+                flag2=true;
+                break;
+            }
+        }
+
+        if(flag2===false){
+            throw new ErrorHandler(401, "Project not expecting approval/ rejection", null);
+        }
+        let owners = await Projectowner.getOwners(projectid);
+        let q;
+        let flag=false;
+        for(q=0;q<owners.length;q++){
+            if(owners[q].UserID==userid){
+                flag=true;
+                break;
+            }
+        }
+        if(flag===false){
+            throw new ErrorHandler(401, "You are unauthorized to delete requested owner", null);
+        }
+
+        await ProjectRequest.deleteRequest(projectid,requsteduserid);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Deletion is successful", null));
+
+    }catch (e) {
+        next(e);
+    }
+};
+exports.deleteRequestedUserofThesis = async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw new ErrorHandler(400, "Missing/ miswritten fields in request", null);
+        }
+        let user = res.locals.middlewareResponse.user;
+
+        let userid = user.id;
+        let thesisid = req.params.id;
+        let requsteduserid = req.params.userid;
+        let thesis = await Thesisarchive.findThesis(thesisid);
+        if (!thesis) {
+            throw new ErrorHandler(404, "Thesis not found", null);
+        }
+        let requestedThesis = await ThesisRequest.getRequestedThesis();
+
+        let t;
+        let flag2=false;
+        for(t=0;t<requestedThesis.length;t++){
+            if(requestedThesis[t].ThesisID==req.params.id){
+                flag2=true;
+                break;
+            }
+        }
+
+        if(flag2===false){
+            throw new ErrorHandler(401, "Thesis not expecting approval/ rejection", null);
+        }
+        let owners = await ThesisOwner.getOwners(thesisid);
+        let q;
+        let flag=false;
+        for(q=0;q<owners.length;q++){
+            if(owners[q].UserID==userid){
+                flag=true;
+                break;
+            }
+        }
+        if(flag===false){
+            throw new ErrorHandler(401, "You are unauthorized to delete requested owner", null);
+        }
+
+        await ThesisRequest.deleteRequest(thesisid,requsteduserid);
+        return res.status(200).send(new SuccessResponse("OK", 200, "Deletion is successful", null));
+
+    }catch (e) {
+        next(e);
+    }
+};
+
