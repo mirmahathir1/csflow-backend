@@ -370,16 +370,17 @@ exports.getReportedPosts = async (req,res,next) => {
         let i;
         let validPostIDs = [];
         for(i=0;i<reportedPostIDs.length;i++){
-            let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i].PostID);
-            let array = await Coursedetails.getCourseID(courseName[0].courseName);
-            let batches = [];
+            validPostIDs.push(reportedPostIDs[i].PostID);
+            //let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i].PostID);
+            //let array = await Coursedetails.getCourseID(courseName[0].courseName);
+            /*let batches = [];
             let p;
             for(p=0;p<array.length;p++){
                 batches.push(array[p].BatchID);
             }
             if(batches.includes(batchid) === true){
-                validPostIDs.push(reportedPostIDs[i].PostID);
-            }
+                //validPostIDs.push(reportedPostIDs[i].PostID);
+            }*/
         }
         let j;
         if(validPostIDs.length===0){
@@ -517,9 +518,11 @@ exports.getReportedAnswers = async (req,res,next) => {
 
         }
         for(i=0;i<reportedPostIDs.length;i++){
-            let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i]);
-            let array = await Coursedetails.getCourseID(courseName[0].courseName);
-            let batches = [];
+            validPostIDs.push(reportedPostIDs[i]);
+            validAnswerIDs.push(reportedAnswerIDs[i].AnswerID);
+            //let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i]);
+           // let array = await Coursedetails.getCourseID(courseName[0].courseName);
+            /*let batches = [];
             let p;
             for(p=0;p<array.length;p++){
                 batches.push(array[p].BatchID);
@@ -527,7 +530,7 @@ exports.getReportedAnswers = async (req,res,next) => {
             if(batches.includes(batchid) === true){
                 validPostIDs.push(reportedPostIDs[i]);
                 validAnswerIDs.push(reportedAnswerIDs[i].AnswerID);
-            }
+            }*/
         }
         let j;
         if(validPostIDs.length===0){
@@ -715,9 +718,11 @@ exports.getReportedComments = async (req,res,next) => {
 
         }
         for(i=0;i<reportedPostIDs.length;i++){
-            let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i]);
-            let array = await Coursedetails.getCourseID(courseName[0].courseName);
-            let batches = [];
+            validPostIDs.push(reportedPostIDs[i]);
+            validCommentIDs.push(reportedCommentIDs[i].CommentID);
+            //let courseName = await Post.getCourseNumberofPost(reportedPostIDs[i]);
+            //let array = await Coursedetails.getCourseID(courseName[0].courseName);
+            /*let batches = [];
             let p;
             for(p=0;p<array.length;p++){
                 batches.push(array[p].BatchID);
@@ -725,7 +730,7 @@ exports.getReportedComments = async (req,res,next) => {
             if(batches.includes(batchid) === true){
                 validPostIDs.push(reportedPostIDs[i]);
                 validCommentIDs.push(reportedCommentIDs[i].CommentID);
-            }
+            }*/
         }
         let j;
         if(validPostIDs.length===0){
