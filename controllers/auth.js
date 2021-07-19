@@ -14,20 +14,32 @@ const getEncryptedPassword = async (password) => {
     return await bcrypt.hash(password, salt);
 };
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         user: process.env.MAIL_ID,
+//         pass: process.env.MAIL_PASSWORD,
+//     }
+// });
+
+let transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
+        type: 'OAuth2',
         user: process.env.MAIL_ID,
-        pass: process.env.MAIL_PASSWORD,
+        clientId: process.env.MAIL_CLINET_ID,
+        clientSecret: process.env.MAIL_CLINET_SECRET
     }
 });
 
-const getMailOptions = (mail, text) => {
+const getMailOptions = (mail, text, subject) => {
     return {
-        from: 'restapimailtest@gmail.com',
+        from: process.env.MAIL_ID,
         to: mail,
-        subject: 'Verify your CSFlow account',
-        text: text
+        text: text,
+        subject: subject,
     }
 };
 
@@ -36,7 +48,7 @@ const getSignUpOptions = (mail, token) => {
         `https://csflow-buet.web.app/#/auth/signUp/complete?token=${token}\n` +
         'Note: This link is valid for 1 hour only.';
     console.log(text);
-    return getMailOptions(mail, text);
+    return getMailOptions(mail, text, "CSFLOW: Sign Up Confirmation");
 };
 
 const getPasswordRecoverOptions = (mail, token) => {
@@ -44,7 +56,7 @@ const getPasswordRecoverOptions = (mail, token) => {
         `https://csflow-buet.web.app/#/auth/password/recover?token=${token}\n` +
         'Note: This link is valid for 1 hour only.';
     //console.log("reached 4"+mail+"   "+token);
-    return getMailOptions(mail, text);
+    return getMailOptions(mail, text, "CSFLOW: Password Recovery");
 };
 
 exports.logOut = async (req, res, next) => {
@@ -113,12 +125,12 @@ exports.authSignUp = async (req, res, next) => {
         try {
             await deleteAllTimeExceedTempAccount(TempUser);
             await TempUser.deleteTempAccountByEmail(email);
-            await TempUser.saveUserTemporarily(name, email, await getEncryptedPassword(password), token);
+            await TempUser.saveUserTemporarily(name, email,
+                await getEncryptedPassword(password), token);
 
             //CODE EDITED BY MAHATHIR FROM HERE-------------------------------------
             // await transporter.sendMail(getSignUpOptions(email, token));
             const tempUser = await TempUser.getTempUserByToken(token);
-
             await TempUser.deleteTempAccountByEmail(tempUser.Email);
             // console.log("adding in user table")
             const dt = dateTime.create();
@@ -133,7 +145,7 @@ exports.authSignUp = async (req, res, next) => {
                 joiningDate: formatted,
             };
 
-            if (Number.isInteger(user.id) === false) {
+            if (Number.isNaN(parseInt(user.id))) {
                 let lastId = await User.getLastID();
                 // console.log(lastId)
                 if (lastId < 10000000)
@@ -142,7 +154,6 @@ exports.authSignUp = async (req, res, next) => {
                 user.id = lastId + 1;
                 user.batchID = 0;
             }
-
             await User.addUser(user);
             // console.log("Done")
 
@@ -181,7 +192,9 @@ exports.authSignUpComplete = async (req, res, next) => {
             joiningDate: formatted,
         };
 
-        if (Number.isInteger(user.id) === false) {
+        try {
+            parseInt(user.id);
+        } catch (e) {
             let lastId = await User.getLastID();
             // console.log(lastId)
             if (lastId < 10000000)
