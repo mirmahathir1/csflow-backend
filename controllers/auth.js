@@ -129,9 +129,8 @@ exports.authSignUp = async (req, res, next) => {
                 await getEncryptedPassword(password), token);
 
             //CODE EDITED BY MAHATHIR FROM HERE-------------------------------------
-            await transporter.sendMail(getSignUpOptions(email, token));
+            // await transporter.sendMail(getSignUpOptions(email, token));
             const tempUser = await TempUser.getTempUserByToken(token);
-
             await TempUser.deleteTempAccountByEmail(tempUser.Email);
             // console.log("adding in user table")
             const dt = dateTime.create();
@@ -146,7 +145,7 @@ exports.authSignUp = async (req, res, next) => {
                 joiningDate: formatted,
             };
 
-            if (Number.isInteger(user.id) === false) {
+            if (Number.isNaN(parseInt(user.id))) {
                 let lastId = await User.getLastID();
                 // console.log(lastId)
                 if (lastId < 10000000)
@@ -155,7 +154,6 @@ exports.authSignUp = async (req, res, next) => {
                 user.id = lastId + 1;
                 user.batchID = 0;
             }
-
             await User.addUser(user);
             // console.log("Done")
 
