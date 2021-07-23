@@ -1116,7 +1116,18 @@ exports.deleteRequestedUserofProject = async (req,res,next)=>{
         if(flag===false){
             throw new ErrorHandler(401, "You are unauthorized to delete requested owner", null);
         }
-
+        let requestedUsers = await ProjectRequest.getRequestedUsers(projectid);
+        let q2;
+        let flag3=false;
+        for(q2=0;q2<requestedUsers.length;q2++){
+            if(requestedUsers[q2].UserID==requsteduserid){
+                flag3=true;
+                break;
+            }
+        }
+        if(flag3===false){
+            throw new ErrorHandler(401, "User ID is not originally requested for project", null);
+        }
         await ProjectRequest.deleteRequest(projectid,requsteduserid);
         return res.status(200).send(new SuccessResponse("OK", 200, "Deletion is successful", null));
 
@@ -1165,7 +1176,18 @@ exports.deleteRequestedUserofThesis = async (req,res,next)=>{
         if(flag===false){
             throw new ErrorHandler(401, "You are unauthorized to delete requested owner", null);
         }
-
+        let requestedUsers = await ThesisRequest.getRequestedUsers(thesisid);
+        let q2;
+        let flag3=false;
+        for(q2=0;q2<requestedUsers.length;q2++){
+            if(requestedUsers[q2].UserID==requsteduserid){
+                flag3=true;
+                break;
+            }
+        }
+        if(flag3===false){
+            throw new ErrorHandler(401, "User ID is not originally requested for thesis", null);
+        }
         await ThesisRequest.deleteRequest(thesisid,requsteduserid);
         return res.status(200).send(new SuccessResponse("OK", 200, "Deletion is successful", null));
 

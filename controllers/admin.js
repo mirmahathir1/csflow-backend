@@ -11,6 +11,8 @@ const Report = require('../models/report');
 const Post = require('../models/post');
 const Answer = require('../models/answer');
 const Comment = require('../models/comment');
+const ThesisRequest = require('../models/thesisRequest');
+const ProjectRequest = require('../models/projectRequest');
 //const Admin = require('../models/admin');
 const {validationResult} = require('express-validator');
 const {ErrorHandler} = require('../response/error');
@@ -49,6 +51,7 @@ exports.updateLevelTerm = async (req,res,next) => {
         if(level < 1 || level > 4 || term < 1 || term > 2){
             throw new ErrorHandler(404, "Invalid level/ term", null);
         }
+        await Batch.updateLevelTerm(batchid,level,term);
         for(i=0;i<userDetails.length;i++){
             await User.updateLevelTerm(userDetails[i].studentId,level,term);
         }
@@ -150,7 +153,7 @@ exports.deleteThesis = async (req,res,next) => {
         }
 
         await Thesisarchive.DeleteThesis(req.params.id);
-
+        await ThesisRequest.deleteThesisID(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Successfully deleted thesis", null));
     } catch (e) {
         next(e);
@@ -170,6 +173,7 @@ exports.deleteProject = async (req,res,next) => {
         }
 
         await Projectarchive.DeleteProject(req.params.id);
+        await ProjectRequest.deleteProjectID(req.params.id);
         return res.status(200).send(new SuccessResponse("OK", 200, "Project deleted successfully", null));
     } catch (e) {
         next(e);

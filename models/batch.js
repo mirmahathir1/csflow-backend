@@ -13,4 +13,12 @@ module.exports = class Batch {
                                          WHERE name like '%${batch}%';`);
         return response[0][0];
     }
+
+    static async updateLevelTerm(batchid, level, term) {
+        await db.execute(`update batch
+                          set Level = ${level},
+                              Term  = ${term}
+                          where ID = ${batchid};`);
+
+    }
 };
