@@ -241,10 +241,12 @@ module.exports = class User {
 
     static async addUser(user) {
         return db.execute(`INSERT INTO user(id, batchID, name,
-                                            email, password, joiningDate)
+                                            email, password,
+                                            joiningDate, level, term)
                            VALUES (${user.id}, ${user.batchID},
                                    '${user.name}', '${user.email}',
-                                   '${user.password}', '${user.joiningDate}')`);
+                                   '${user.password}', '${user.joiningDate}',
+                                   ${user.level}, ${user.term})`);
     }
 
     static async getTopUser() {
