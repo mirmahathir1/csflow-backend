@@ -140,7 +140,7 @@ module.exports = class Tag {
 
     static async getAllCourseTag() {
         const result = await db.execute(`
-            select CourseNo as courseId, Title as name
+            select DISTINCT CourseNo as courseId, Title as name
             from coursedetail
             where CourseTagID = any (
                 select ID
