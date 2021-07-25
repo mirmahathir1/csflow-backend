@@ -5,6 +5,7 @@ const dateTime = require('node-datetime');
 
 const {SuccessResponse} = require('../response/success');
 const TempUser = require('../models/tempuser');
+const Batch = require('../models/batch');
 const ForgetPassword = require('../models/forgetpassword');
 const User = require('../models/user');
 const {ErrorHandler} = require('../response/error');
@@ -153,6 +154,13 @@ exports.authSignUp = async (req, res, next) => {
                 // console.log(lastId)
                 user.id = lastId + 1;
                 user.batchID = 0;
+                user.level = 0;
+                user.term = 0;
+            }
+            else {
+                const levelTerm = await Batch.getLevelTerm(user.batchID);
+                user.level = levelTerm.level;
+                user.term = levelTerm.term;
             }
             await User.addUser(user);
             // console.log("Done")

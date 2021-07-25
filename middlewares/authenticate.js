@@ -144,10 +144,10 @@ exports.handlePOSTSignUp = async (req, res, next) => {
             //     "Please Sign Up using departmental email."));
         }
 
-        let response = await emailValidator.validate(email);
-        if (!response.valid)
-            return res.status(400).send(new ErrorHandler(400,
-                "Invalid email address"));
+        // let response = await emailValidator.validate(email);
+        // if (!response.valid)
+        //     return res.status(400).send(new ErrorHandler(400,
+        //         "Invalid email address"));
 
         let user = await User.findByEmail(email);
         if (user)
