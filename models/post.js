@@ -223,7 +223,7 @@ module.exports = class Post {
     static async unansweredPost() {
         let response = await db.execute(`select id
                                          from post
-                                         where id in (
+                                         where id not in (
                                              select distinct postid
                                              from answer
                                          )
