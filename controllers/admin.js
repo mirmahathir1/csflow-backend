@@ -225,7 +225,10 @@ exports.createCourse = async (req,res,next) => {
         let tagId = count[0] + 1;
         await Tag.addTag(tagId,'course',courseId);
         for(k=0;k<batch.length;k++){
-            await Coursedetails.createCourse(courseId,title,level,term,tagId,batch[k].ID);
+            if(batch[k].ID>0){
+                await Coursedetails.createCourse(courseId,title,level,term,tagId,batch[k].ID);
+            }
+
         }
 
         return res.status(200).send(new SuccessResponse("OK", 200, "Course creation successful", null));
